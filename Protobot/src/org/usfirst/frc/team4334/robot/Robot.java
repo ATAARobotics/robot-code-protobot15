@@ -2,10 +2,12 @@
 /**
  * 		BINDS: 
  * 		
- * 		Switch Gears: A
+ * 		A = Switch Gears
  * 
- * 		Forward/Backward LEFT: Left Joy Y axis
- * 		Forward/Backward RIGHT: Right Joy Y axis
+ * 		Left Thumbstick - Forward/Backward
+ * 		Right THumbstick - Turn Left/Right
+ * 
+ * 		
  *		
  * 
  */
@@ -48,10 +50,10 @@ public class Robot extends IterativeRobot {
 	
     
     public void robotInit() {
-		vicFL = new Victor(1);
-		vicBL = new Victor(3);
-		vicFR = new Victor(0);
-		vicBR = new Victor(2);
+		vicFL = new Victor(0);
+		vicBL = new Victor(1);
+		vicFR = new Victor(2);
+		vicBR = new Victor(3);
       joy = new Joystick(0);
       comp  = new Compressor(0);
       gearShift = new DoubleSolenoid(0, 1);
@@ -78,25 +80,24 @@ public class Robot extends IterativeRobot {
     
     public void teleopPeriodic() {
     	
-    	leftThumb=(joy.getRawAxis(1));
-    	rightThumb=-(joy.getRawAxis(5));
+    	leftThumb=(-(joy.getRawAxis(1)));
+    	rightThumb=(joy.getRawAxis(4));
     	
+    	//If left thumbstick is still
 
-    	//If left thummbstick is still
+    	if((leftThumb>-0.1) && (leftThumb<0.1)) {
 
-    	if((joy.getRawAxis(1)>-5) && (joy.getRawAxis(1)<5)) {
-
-    	vicFL.set(rightThumb);
-    	vicBL.set(rightThumb);
+    	vicFL.set(-(rightThumb));
+    	vicBL.set(-(rightThumb));
     	    
-    	vicFR.set(rightThumb);
-    	vicBR.set(rightThumb);
+    	vicFR.set(-(rightThumb));
+    	vicBR.set(-(rightThumb));
 
     	}
 
     	//If right thumbstick is still
 
-    	if((joy.getRawAxis(6)>-5) && (joy.getRawAxis(6)<5)) {
+    	if((rightThumb>-0.1) && (rightThumb<0.1)) {
 
     	vicFL.set(leftThumb);
     	vicBL.set(leftThumb);
@@ -108,43 +109,19 @@ public class Robot extends IterativeRobot {
 
     	//If left thumbstick is positive and right thumbstick is positive
 
-    	if((joy.getRawAxis(1)>5) && (joy.getRawAxis(6)>5)) {
+    	if((leftThumb>0.1) && (rightThumb>0.1)) {
 
-    	vicFL.set(leftThumb + rightThumb);
-    	vicBL.set(leftThumb + rightThumb);
+    	vicFL.set(leftThumb - rightThumb);
+    	vicBL.set(leftThumb - rightThumb);
     	    
-    	vicFR.set(-leftThumb);
-    	vicBR.set(-leftThumb);
+    	vicFR.set(-(leftThumb));
+    	vicBR.set(-(leftThumb));
 
     	}
 
     	//If left thumbstick is positive and right thumbstick is negative
 
-    	if((joy.getRawAxis(1)>5) && (joy.getRawAxis(6)<-5)) {
-
-    	vicFL.set(leftThumb);
-    	vicBL.set(leftThumb);
-    	    
-    	vicFR.set(-(leftThumb - rightThumb));
-    	vicBR.set(-(leftThumb - rightThumb));
-
-    	}
-
-    	//If left thumbstick is negative and right thumbstick is positive
-
-    	if((joy.getRawAxis(1)<-5) && (joy.getRawAxis(6)>5)) {
-
-    	vicFL.set(leftThumb - rightThumb);
-    	vicBL.set(leftThumb - rightThumb);
-    	    
-    	vicFR.set(-leftThumb);
-    	vicBR.set(-leftThumb);
-
-    	}
-
-    	//If left thumbstick is negative and right thumbstick is negative
-
-    	if((joy.getRawAxis(1)<-5) && (joy.getRawAxis(6)<-5)) {
+    	if((leftThumb>0.1) && (rightThumb<-0.1)) {
 
     	vicFL.set(leftThumb);
     	vicBL.set(leftThumb);
@@ -153,6 +130,31 @@ public class Robot extends IterativeRobot {
     	vicBR.set(-(leftThumb + rightThumb));
 
     	}
+
+    	//If left thumbstick is negative and right thumbstick is positive
+
+    	if((leftThumb<-0.1) && (rightThumb>0.1)) {
+
+    	vicFL.set(leftThumb + rightThumb);
+    	vicBL.set(leftThumb + rightThumb);
+    	    
+    	vicFR.set(-(leftThumb));
+    	vicBR.set(-(leftThumb));
+
+    	}
+
+    	//If left thumbstick is negative and right thumbstick is negative
+
+    	if((leftThumb<-0.1) && (rightThumb<-0.1)) {
+
+    	vicFL.set(leftThumb);
+    	vicBL.set(leftThumb);
+    	    
+    	vicFR.set(-(leftThumb - rightThumb));
+    	vicBR.set(-(leftThumb - rightThumb));
+    	
+    	}
+    	
     	
     	if (joy.getRawButton(1)==false) {stillPressed=false;}
     	if (joy.getRawButton(1)&&(stillPressed==false)){
@@ -170,7 +172,8 @@ public class Robot extends IterativeRobot {
     	System.out.print(comp.getCompressorCurrent());
     	System.out.print(comp.enabled());
     	System.out.print("/");
-    }
+    
+   }
     
     
     
