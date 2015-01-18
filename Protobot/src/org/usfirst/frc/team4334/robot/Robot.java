@@ -16,11 +16,12 @@
 package org.usfirst.frc.team4334.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Victor;
-
+import edu.wpi.first.wpilibj.Encoder;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -47,6 +48,8 @@ public class Robot extends IterativeRobot {
     double leftThumb,rightThumb;
 	boolean stillPressed;
 	int number;
+	 Encoder encoderR;
+	 Encoder encoderL;
 	
     
     public void robotInit() {
@@ -60,6 +63,10 @@ public class Robot extends IterativeRobot {
       gearShift.set(DoubleSolenoid.Value.kForward);
       comp.setClosedLoopControl(true);
     number  = 6;
+	 encoderR = new Encoder(1, 2, true, EncodingType.k4X);
+	 encoderL = new Encoder(3, 4, true, EncodingType.k4X);
+	 encoderR.reset();
+	 encoderL.reset();
     }
 
     
@@ -67,11 +74,53 @@ public class Robot extends IterativeRobot {
      //This function is called periodically during autonomous
      
     public void autonomousPeriodic() {
-    	 vicBL.set(1);
-    	 vicFL.set(1);
-    	 vicBR.set(-1);
-    	 vicFR.set(-1);
+    	double speedL = 0.75;
+    	double speedR = 0.75;
+    	 vicBL.set(0);
+    	 vicFL.set(0);
+    	 vicBR.set(0);
+    	 vicFR.set(0);
     	 gearShift.set(DoubleSolenoid.Value.kForward);
+    	 //new encoder object on ports x and y with reverse sensing true and 4X encoding
+    	 vicBL.set(speedL);
+    	 vicFL.set(speedL);
+    	 vicBR.set(-speedR);
+    	 vicFR.set(-speedR);
+    	 int rateL;
+    	 int rateR;
+    	 int count = 0;
+    	 mainloop:
+    	 while(count != 5){
+    		 rateL = encoderL.get();
+    		 rateR = encoderR.get();
+    		 if(encoderL.equals(encoderR) != true){
+    			 if(rateL > rateR){
+    				 speedL -= 0.03;
+    			 }
+    			 else if(rateL < rateR){
+    				 speedL += 0.05;		 
+    			 }
+    			 vicBL.set(speedL);
+		    	 vicFL.set(speedL);
+		    	 vicBR.set(-speedR);
+		    	 vicFR.set(-speedR);
+		    	 encoderL.reset();
+		    	 encoderR.reset();
+		    	 count += 1;
+		    	 try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					vicBL.set(0.25);
+			    	 vicFL.set(0.25);
+			    	 vicBR.set(-0.25);
+			    	 vicFR.set(-0.25);
+					continue;
+				}
+		    	 continue;
+    		
+    		 }
+    	 }
+    	 
     }
 
     
@@ -180,7 +229,6 @@ public class Robot extends IterativeRobot {
      //This function is called periodically during test mode
      
     public void testPeriodic() {
-    
     }
     
 }
