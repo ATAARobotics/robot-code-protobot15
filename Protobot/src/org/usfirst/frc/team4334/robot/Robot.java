@@ -48,6 +48,8 @@ public class Robot extends IterativeRobot {
     double leftThumb,rightThumb;
 	boolean stillPressed;
 	int number;
+	Encoder encoderR;
+	Encoder encoderL;
 	 
 	
     
@@ -62,8 +64,6 @@ public class Robot extends IterativeRobot {
       gearShift.set(DoubleSolenoid.Value.kForward);
       comp.setClosedLoopControl(true);
     number  = 6;
-     Encoder encoderR;
-	 Encoder encoderL;
 	 encoderR = new Encoder(0, 1, true, EncodingType.k4X);
 	 encoderL = new Encoder(2, 3, true, EncodingType.k4X);
 	 encoderR.reset();
