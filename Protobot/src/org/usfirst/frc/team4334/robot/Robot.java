@@ -76,51 +76,11 @@ public class Robot extends IterativeRobot {
      
     public void autonomousPeriodic() {
     	double speedL = 0.75;
-    	double speedR = 0.75;
-    	 vicBL.set(0);
-    	 vicFL.set(0);
-    	 vicBR.set(0);
-    	 vicFR.set(0);
-    	 gearShift.set(DoubleSolenoid.Value.kForward);
-    	 //new encoder object on ports x and y with reverse sensing true and 4X encoding
+    	double speedR = 0.75 + 0.10;
     	 vicBL.set(speedL);
     	 vicFL.set(speedL);
-    	 vicBR.set(-speedR);
-    	 vicFR.set(-speedR);
-    	 int rateL;
-    	 int rateR;
-    	 int count = 0;
-    	 while(count != 5){
-    		 rateL = encoderL.get();
-    		 rateR = encoderR.get();
-    		 if(encoderL.equals(encoderR) != true){
-    			 if(rateL > rateR){
-    				 speedL -= 0.03;
-    			 }
-    			 else if(rateL < rateR){
-    				 speedL += 0.05;		 
-    			 }
-    			 vicBL.set(speedL);
-		    	 vicFL.set(speedL);
-		    	 vicBR.set(-speedR);
-		    	 vicFR.set(-speedR);
-		    	 encoderL.reset();
-		    	 encoderR.reset();
-		    	 count += 1;
-		    	 try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					vicBL.set(0.25);
-			    	 vicFL.set(0.25);
-			    	 vicBR.set(-0.25);
-			    	 vicFR.set(-0.25);
-					continue;
-				}
-		    	 continue;
-    		
-    		 }
-    	 }
-    	 
+    	 vicBR.set(speedR);
+    	 vicFR.set(speedR); 	 
     }
 
     
