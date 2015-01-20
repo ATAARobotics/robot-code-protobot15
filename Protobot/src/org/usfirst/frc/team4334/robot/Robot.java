@@ -16,7 +16,9 @@
 package org.usfirst.frc.team4334.robot;
 
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Victor;
@@ -46,20 +48,36 @@ public class Robot extends IterativeRobot {
     DoubleSolenoid gearShift;
     double leftThumb,rightThumb;
 	boolean stillPressed;
-	int number;
+	int stage;
 	
+	int leftR;
+	int rightR;
+
+	
+	Encoder encoderL;
+	Encoder encoderR;
     
     public void robotInit() {
-		vicFL = new Victor(0);
-		vicBL = new Victor(1);
-		vicFR = new Victor(2);
-		vicBR = new Victor(3);
-      joy = new Joystick(0);
-      comp  = new Compressor(0);
-      gearShift = new DoubleSolenoid(0, 1);
-      gearShift.set(DoubleSolenoid.Value.kForward);
-      comp.setClosedLoopControl(true);
-    number  = 6;
+    
+    vicFL = new Victor(0);
+	vicBL = new Victor(1);
+	vicFR = new Victor(2);
+    vicBR = new Victor(3);
+    
+    joy = new Joystick(0);
+    
+    comp  = new Compressor(0);
+    gearShift = new DoubleSolenoid(0, 1);
+    gearShift.set(DoubleSolenoid.Value.kForward);
+    comp.setClosedLoopControl(true);
+    
+    encoderR = new Encoder(1, 2, true, EncodingType.k4X);
+	encoderL = new Encoder(3, 4, true, EncodingType.k4X);
+	
+	encoderL.reset();
+	encoderR.reset();
+    
+    stage = 1;
     }
 
     
@@ -67,12 +85,145 @@ public class Robot extends IterativeRobot {
      //This function is called periodically during autonomous
      
     public void autonomousPeriodic() {
-    	 vicBL.set(1);
-    	 vicFL.set(1);
-    	 vicBR.set(-1);
-    	 vicFR.set(-1);
-    	 gearShift.set(DoubleSolenoid.Value.kForward);
+    	
+ 
+		leftR = encoderL.get();
+    	rightR = encoderR.get();
+    	
+    	if(stage == 1){
+    	
+        	if((leftR < 16000) && (-rightR < 16000)) {
+    		
+        		vicFL.set(1);
+        		vicBL.set(1);
+        		vicFR.set(-0.99);
+        		vicBR.set(-0.99);
+        		
+    			}
+        	
+        	else {
+        		
+        		vicFL.set(0);
+        		vicBL.set(0);
+        		vicFR.set(0);
+        		vicBR.set(0);
+        		stage = 2;
+        		encoderL.reset();
+        		encoderR.reset();
+        		
+        	}
+    	
+    	}
+    	
+    	if(stage == 2){
+    		    		
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 770) && (rightR < 770)){
+    		
+    			vicFL.set(-1);
+    			vicBL.set(-1);
+    			vicFR.set(-0.99);
+    			vicBR.set(-0.99);
+        	
+    		}
+    		else {
+    			
+    			vicFL.set(0);
+            	vicBL.set(0);
+            	vicFR.set(0);
+            	vicBR.set(0);
+            	stage = 3;
+            	encoderL.reset();
+        		encoderR.reset();
+            	
+    		}
+    		
+    	}
+ 
+    	if(stage == 3){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 7000) && (-rightR < 7000)) {
+        		
+        		vicFL.set(1);
+        		vicBL.set(1);
+        		vicFR.set(-0.99);
+        		vicBR.set(-0.99);
+        		
+    			}
+        	
+        	else {
+        		
+        		vicFL.set(0);
+        		vicBL.set(0);
+        		vicFR.set(0);
+        		vicBR.set(0);
+        		stage = 4;
+        		encoderL.reset();
+        		encoderR.reset();
+        		
+        	}
+    	}
+    
+    	if(stage == 4) {
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 770) && (rightR < 770)){
+    		
+    			vicFL.set(-1);
+    			vicBL.set(-1);
+    			vicFR.set(-0.99);
+    			vicBR.set(-0.99);
+        	
+    		}
+    		else {
+    			
+    			vicFL.set(0);
+            	vicBL.set(0);
+            	vicFR.set(0);
+            	vicBR.set(0);
+            	stage = 5;
+            	encoderL.reset();
+            	encoderR.reset();
+            	
+    		}
+    	}
+    	
+    	if(stage == 5){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 4000) && (-rightR < 4000)) {
+        		
+        		vicFL.set(1);
+        		vicBL.set(1);
+        		vicFR.set(-0.99);
+        		vicBR.set(-0.99);
+        		
+    			}
+        	
+        	else {
+        		
+        		vicFL.set(0);
+        		vicBL.set(0);
+        		vicFR.set(0);
+        		vicBR.set(0);
+        		stage = 6;
+        		//encoderL.reset();
+        		//encoderR.reset();
+        		
+        	}
+    	}
     }
+    
 
     
     
@@ -111,8 +262,8 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb>0.1) && (rightThumb>0.1)) {
 
-    	vicFL.set(leftThumb - rightThumb);
-    	vicBL.set(leftThumb - rightThumb);
+    	vicFL.set(leftThumb - (rightThumb * 0.9));
+    	vicBL.set(leftThumb - (rightThumb * 0.9));
     	    
     	vicFR.set(-(leftThumb));
     	vicBR.set(-(leftThumb));
@@ -126,8 +277,8 @@ public class Robot extends IterativeRobot {
     	vicFL.set(leftThumb);
     	vicBL.set(leftThumb);
     	    
-    	vicFR.set(-(leftThumb + rightThumb));
-    	vicBR.set(-(leftThumb + rightThumb));
+    	vicFR.set(-(leftThumb + (rightThumb * 0.9)));
+    	vicBR.set(-(leftThumb + (rightThumb * 0.9)));
 
     	}
 
@@ -135,8 +286,8 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb<-0.1) && (rightThumb>0.1)) {
 
-    	vicFL.set(leftThumb + rightThumb);
-    	vicBL.set(leftThumb + rightThumb);
+    	vicFL.set(leftThumb + (rightThumb * 0.9));
+    	vicBL.set(leftThumb + (rightThumb * 0.9));
     	    
     	vicFR.set(-(leftThumb));
     	vicBR.set(-(leftThumb));
@@ -150,8 +301,8 @@ public class Robot extends IterativeRobot {
     	vicFL.set(leftThumb);
     	vicBL.set(leftThumb);
     	    
-    	vicFR.set(-(leftThumb - rightThumb));
-    	vicBR.set(-(leftThumb - rightThumb));
+    	vicFR.set(-(leftThumb - (rightThumb * 0.9)));
+    	vicBR.set(-(leftThumb - (rightThumb * 0.9)));
     	
     	}
     	
