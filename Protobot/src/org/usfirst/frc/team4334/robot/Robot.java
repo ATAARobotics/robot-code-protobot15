@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.Victor;
  * creating this project, you must also update the manifest file in the resource
  * directory.
  */
+	
 
 
 public class Robot extends IterativeRobot {
@@ -76,6 +77,8 @@ public class Robot extends IterativeRobot {
 	
 	encoderL.reset();
 	encoderR.reset();
+	
+	
     
     stage = 1;
     }
@@ -86,18 +89,41 @@ public class Robot extends IterativeRobot {
      
     public void autonomousPeriodic() {
     	
+    	leftR = encoderL.get ();
+    	rightR = encoderR.get();
+    	
+    	/*if (stage == 1) {
+    		
+    		if ((leftR < 1000) && (-rightR < 1000)) {
+    			vicFL.set (.95);
+    			vicBL.set (.95);
+    			vicFR.set (1);
+    			vicBR.set (1);
+    		}
+    		else {
+    			vicFL.set (0);
+    			vicBL.set (0);
+    			vicFR.set (0);
+    			vicBR.set (0);
+    		}
+    		}
+    	}
+    	*/
  
 		leftR = encoderL.get();
     	rightR = encoderR.get();
     	
     	if(stage == 1){
-    	
-        	if((leftR < 16000) && (-rightR < 16000)) {
+    		leftR = encoderL.get();
+    		rightR = encoderR.get();
     		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+    		
+        	if((leftR < 17000) && (-rightR < 17000)) {
+    		
+        		vicFL.set(0.9);
+        		vicBL.set(0.9);
+        		vicFR.set(-1);
+        		vicBR.set(-1);
         		
     			}
         	
@@ -120,13 +146,13 @@ public class Robot extends IterativeRobot {
     		
     		leftR = encoderL.get();
         	rightR = encoderR.get();
+        	
+    		if((leftR < 730) && (rightR < 730)){
     		
-    		if((leftR < 770) && (rightR < 770)){
-    		
-    			vicFL.set(-1);
-    			vicBL.set(-1);
-    			vicFR.set(-0.99);
-    			vicBR.set(-0.99);
+    			vicFL.set(-0.95);
+    			vicBL.set(-0.95);
+    			vicFR.set(-1);
+    			vicBR.set(-1);
         	
     		}
     		else {
@@ -147,13 +173,13 @@ public class Robot extends IterativeRobot {
     		
     		leftR = encoderL.get();
         	rightR = encoderR.get();
-    		
+        	
     		if((leftR < 7000) && (-rightR < 7000)) {
         		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+        		vicFL.set(0.95);
+        		vicBL.set(0.95);
+        		vicFR.set(-1);
+        		vicBR.set(-1);
         		
     			}
         	
@@ -174,13 +200,13 @@ public class Robot extends IterativeRobot {
     		
     		leftR = encoderL.get();
         	rightR = encoderR.get();
+        	
+    		if((leftR < 730) && (rightR < 730)){
     		
-    		if((leftR < 770) && (rightR < 770)){
-    		
-    			vicFL.set(-1);
-    			vicBL.set(-1);
-    			vicFR.set(-0.99);
-    			vicBR.set(-0.99);
+    			vicFL.set(-0.95);
+    			vicBL.set(-0.95);
+    			vicFR.set(-1);
+    			vicBR.set(-1);
         	
     		}
     		else {
@@ -200,13 +226,13 @@ public class Robot extends IterativeRobot {
     		
     		leftR = encoderL.get();
         	rightR = encoderR.get();
-    		
-    		if((leftR < 4000) && (-rightR < 4000)) {
+        	
+    		if((leftR < 12500) && (-rightR < 12500)) {
         		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+        		vicFL.set(0.95);
+        		vicBL.set(0.95);
+        		vicFR.set(-1);
+        		vicBR.set(-1);
         		
     			}
         	
@@ -217,11 +243,85 @@ public class Robot extends IterativeRobot {
         		vicFR.set(0);
         		vicBR.set(0);
         		stage = 6;
-        		//encoderL.reset();
-        		//encoderR.reset();
+        		encoderL.reset();
+        		encoderR.reset();
         		
         	}
     	}
+    	if (stage ==6) {
+    		leftR = encoderL.get();
+    		rightR = encoderR.get();
+    		
+    		if ((leftR < 3350) && (rightR < 3350)) {
+    			
+    			vicFL.set (-0.95);
+    			vicBL.set (-0.95);
+    			vicFR.set (-1);
+    			vicBR.set (-1);
+    			
+    		}
+    		
+    		else {
+    			
+    			vicFL.set (0);
+    			vicBL.set (0);
+    			vicFR.set (0);
+    			vicBR.set (0);
+    			stage = 7;
+    			encoderL.reset();
+    			encoderR.reset();
+    		}
+    	}
+    	
+    	if (stage ==7) {
+    		leftR = encoderL.get();
+    		rightR = encoderR.get();
+
+    		if ((leftR < 6000) && (-rightR < 6000)) {
+    				
+    				vicFL.set (0.95);
+    				vicBL.set (0.95);
+    				vicFR.set (-1);
+    				vicBR.set (-1);
+    				
+    			}
+    			
+    			else {
+    				
+    				vicFL.set (0);
+    				vicBL.set (0);
+    				vicFR.set (0);
+    				vicBR.set (0);
+    				stage = 8;
+    			    encoderL.reset();
+    				encoderR.reset();
+    				
+    			}
+    	}
+    	 if (stage ==8) {
+    		 
+    		 leftR = encoderL.get () ;
+    		 rightR = encoderR.get ();
+    		 
+    		 if ((leftR < 10) && (rightR < 10)) {
+    			 
+    			 vicFL.set (0.95);
+    			 vicBL.set (0.95);
+    			 vicFR.set (-1);
+    			 vicBR.set (-1);
+    		 }
+    		 else {
+    			 vicFL.set (0);
+    			 vicBL.set (0);
+    			 vicFR.set (0);
+    			 vicBR.set (0);
+    			 stage = 9;
+    			 //encoderL.reset();
+    			 //encoderR.reset();
+    		
+    			
+    		 }
+    	 }
     }
     
 
