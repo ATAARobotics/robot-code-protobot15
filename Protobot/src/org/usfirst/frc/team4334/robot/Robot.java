@@ -2,26 +2,43 @@
 /**
  * 		BINDS: 
  * 		
+ * 		Joystick 1:
+ * 
  * 		A = Switch Gears
+ * 		Y = Winch Up
+ * 		B = Winch Down
  * 
  * 		Left Thumbstick - Forward/Backward
- * 		Right THumbstick - Turn Left/Right
+ * 		Right Thumbstick - Turn Left/Right
  * 
- * 		
+ * 		LB = Arms Toggle
+ * 		RB = Flipper
  *		
- * 
+ *		Triggers = Kicker
+ *		Left Stick = Drive F/R
+ *		Right Stck = Drive Turning
+ *
+ *		Joystick 2:
+ *
+ *		LB = Arms Toggle
+ *		
+ *		Triggers = Kicker
+ *
+ *		Left Stick = Arm Motors In/Out
+ *		Right Stick = Arm Motors L/R
+ *
  */
 
 
 package org.usfirst.frc.team4334.robot;
 
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Victor;
 
 
 /**
@@ -35,45 +52,68 @@ import edu.wpi.first.wpilibj.Victor;
 
 public class Robot extends IterativeRobot {
     
-      //This function is run when the robot is first started up and should be
-      //used for any initialization code.
+    //This function is run when the robot is first started up and should be
+    //used for any initialization code.
      
     
 	Joystick joy;
-	Victor vicFL;
-    Victor vicBL;
-    Victor vicFR;
-    Victor vicBR;
-    Compressor comp;
-    DoubleSolenoid gearShift;
-    double leftThumb,rightThumb;
-	boolean stillPressed;
-	int stage;
+	Joystick joy2;
 	
+	CANTalon canFL;
+    CANTalon canBL;
+    CANTalon canFR;
+    CANTalon canBR;
+    CANTalon canWinch;
+    CANTalon canKicker;
+    CANTalon canArmLeft;
+    CANTalon canArmRight;
+    
+    Encoder encoderL;
+	Encoder encoderR;
+    
+	Compressor comp;
+    DoubleSolenoid gearShift;
+    DoubleSolenoid armChange;
+    DoubleSolenoid flipper;
+    
+    double leftThumb,rightThumb;
+    double leftThumb2,rightThumb2;
+    double leftTrig,rightTrig;
+    double leftTrig2,rightTrig2;
+	
+    boolean stillPressed;
+    boolean stillPressed2;
+    boolean stillPressed3;
+    boolean stillPressed4;
+	
+	int stage;
 	int leftR;
 	int rightR;
-
-	
-	Encoder encoderL;
-	Encoder encoderR;
     
     public void robotInit() {
     
-    vicFL = new Victor(0);
-	vicBL = new Victor(1);
-	vicFR = new Victor(2);
-    vicBR = new Victor(3);
+    canFL = new CANTalon(0);
+	canBL = new CANTalon(1);
+	canFR = new CANTalon(2);
+    canBR = new CANTalon(3);
+    canWinch = new CANTalon(4);
+    canKicker = new CANTalon(5);
     
     joy = new Joystick(0);
+    joy2 = new Joystick(1);
     
     comp  = new Compressor(0);
+    comp.setClosedLoopControl(true);
+    
+    armChange = new DoubleSolenoid(2, 3);
+    armChange.set(DoubleSolenoid.Value.kForward);
     gearShift = new DoubleSolenoid(0, 1);
     gearShift.set(DoubleSolenoid.Value.kForward);
-    comp.setClosedLoopControl(true);
+    flipper = new DoubleSolenoid(4,5);
+    flipper.set(DoubleSolenoid.Value.kForward);
     
     encoderR = new Encoder(1, 2, true, EncodingType.k4X);
 	encoderL = new Encoder(3, 4, true, EncodingType.k4X);
-	
 	encoderL.reset();
 	encoderR.reset();
     
@@ -82,7 +122,7 @@ public class Robot extends IterativeRobot {
 
     
     
-     //This function is called periodically during autonomous
+     //This function is called periodically [20 ms] during autonomous
      
     public void autonomousPeriodic() {
     	
@@ -94,19 +134,19 @@ public class Robot extends IterativeRobot {
     	
         	if((leftR < 16000) && (-rightR < 16000)) {
     		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+        		canFL.set(1);
+        		canBL.set(1);
+        		canFR.set(-0.99);
+        		canBR.set(-0.99);
         		
     			}
         	
         	else {
         		
-        		vicFL.set(0);
-        		vicBL.set(0);
-        		vicFR.set(0);
-        		vicBR.set(0);
+        		canFL.set(0);
+        		canBL.set(0);
+        		canFR.set(0);
+        		canBR.set(0);
         		stage = 2;
         		encoderL.reset();
         		encoderR.reset();
@@ -123,18 +163,18 @@ public class Robot extends IterativeRobot {
     		
     		if((leftR < 770) && (rightR < 770)){
     		
-    			vicFL.set(-1);
-    			vicBL.set(-1);
-    			vicFR.set(-0.99);
-    			vicBR.set(-0.99);
+    			canFL.set(-1);
+    			canBL.set(-1);
+    			canFR.set(-0.99);
+    			canBR.set(-0.99);
         	
     		}
     		else {
     			
-    			vicFL.set(0);
-            	vicBL.set(0);
-            	vicFR.set(0);
-            	vicBR.set(0);
+    			canFL.set(0);
+            	canBL.set(0);
+            	canFR.set(0);
+            	canBR.set(0);
             	stage = 3;
             	encoderL.reset();
         		encoderR.reset();
@@ -150,19 +190,19 @@ public class Robot extends IterativeRobot {
     		
     		if((leftR < 7000) && (-rightR < 7000)) {
         		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+        		canFL.set(1);
+        		canBL.set(1);
+        		canFR.set(-0.99);
+        		canBR.set(-0.99);
         		
     			}
         	
         	else {
         		
-        		vicFL.set(0);
-        		vicBL.set(0);
-        		vicFR.set(0);
-        		vicBR.set(0);
+        		canFL.set(0);
+        		canBL.set(0);
+        		canFR.set(0);
+        		canBR.set(0);
         		stage = 4;
         		encoderL.reset();
         		encoderR.reset();
@@ -177,18 +217,18 @@ public class Robot extends IterativeRobot {
     		
     		if((leftR < 770) && (rightR < 770)){
     		
-    			vicFL.set(-1);
-    			vicBL.set(-1);
-    			vicFR.set(-0.99);
-    			vicBR.set(-0.99);
+    			canFL.set(-1);
+    			canBL.set(-1);
+    			canFR.set(-0.99);
+    			canBR.set(-0.99);
         	
     		}
     		else {
     			
-    			vicFL.set(0);
-            	vicBL.set(0);
-            	vicFR.set(0);
-            	vicBR.set(0);
+    			canFL.set(0);
+            	canBL.set(0);
+            	canFR.set(0);
+            	canBR.set(0);
             	stage = 5;
             	encoderL.reset();
             	encoderR.reset();
@@ -203,20 +243,122 @@ public class Robot extends IterativeRobot {
     		
     		if((leftR < 4000) && (-rightR < 4000)) {
         		
-        		vicFL.set(1);
-        		vicBL.set(1);
-        		vicFR.set(-0.99);
-        		vicBR.set(-0.99);
+        		canFL.set(1);
+        		canBL.set(1);
+        		canFR.set(-0.99);
+        		canBR.set(-0.99);
         		
     			}
         	
         	else {
         		
-        		vicFL.set(0);
-        		vicBL.set(0);
-        		vicFR.set(0);
-        		vicBR.set(0);
+        		canFL.set(0);
+        		canBL.set(0);
+        		canFR.set(0);
+        		canBR.set(0);
         		stage = 6;
+        		encoderL.reset();
+        		encoderR.reset();
+        		
+        	}
+    	}
+    	if(stage == 6){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((-leftR < 770) && (-rightR < 770)){
+    		
+    			canFL.set(1);
+    			canBL.set(1);
+    			canFR.set(0.99);
+    			canBR.set(0.99);
+        	
+    		}
+    		else {
+    			
+    			canFL.set(0);
+            	canBL.set(0);
+            	canFR.set(0);
+            	canBR.set(0);
+            	stage = 7;
+            	encoderL.reset();
+        		encoderR.reset();
+            	
+    		}
+    	}
+    	if(stage == 7){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 7000) && (-rightR < 7000)) {
+        		
+        		canFL.set(1);
+        		canBL.set(1);
+        		canFR.set(-0.99);
+        		canBR.set(-0.99);
+        		
+    			}
+        	
+        	else {
+        		
+        		canFL.set(0);
+        		canBL.set(0);
+        		canFR.set(0);
+        		canBR.set(0);
+        		stage = 8;
+        		encoderL.reset();
+        		encoderR.reset();
+        		
+        	}
+    	}
+    	if(stage == 8){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((-leftR < 770) && (-rightR < 770)){
+    		
+    			canFL.set(1);
+    			canBL.set(1);
+    			canFR.set(0.99);
+    			canBR.set(0.99);
+        	
+    		}
+    		else {
+    			
+    			canFL.set(0);
+            	canBL.set(0);
+            	canFR.set(0);
+            	canBR.set(0);
+            	stage = 9;
+            	encoderL.reset();
+        		encoderR.reset();
+            	
+    		}
+    	}
+    	if(stage == 9){
+    		
+    		leftR = encoderL.get();
+        	rightR = encoderR.get();
+    		
+    		if((leftR < 7000) && (-rightR < 7000)) {
+        		
+        		canFL.set(1);
+        		canBL.set(1);
+        		canFR.set(-0.99);
+        		canBR.set(-0.99);
+        		
+    			}
+        	
+        	else {
+        		
+        		canFL.set(0);
+        		canBL.set(0);
+        		canFR.set(0);
+        		canBR.set(0);
+        		stage = 10;
         		//encoderL.reset();
         		//encoderR.reset();
         		
@@ -227,7 +369,7 @@ public class Robot extends IterativeRobot {
 
     
     
-     //This function is called periodically during operator control
+     //This function is called periodically [20 ms] during operator control
     
     public void teleopPeriodic() {
     	
@@ -238,11 +380,11 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb>-0.1) && (leftThumb<0.1)) {
 
-    	vicFL.set(-(rightThumb));
-    	vicBL.set(-(rightThumb));
+    	canFL.set(-(rightThumb));
+    	canBL.set(-(rightThumb));
     	    
-    	vicFR.set(-(rightThumb));
-    	vicBR.set(-(rightThumb));
+    	canFR.set(-(rightThumb));
+    	canBR.set(-(rightThumb));
 
     	}
 
@@ -250,11 +392,11 @@ public class Robot extends IterativeRobot {
 
     	if((rightThumb>-0.1) && (rightThumb<0.1)) {
 
-    	vicFL.set(leftThumb);
-    	vicBL.set(leftThumb);
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
     	    
-    	vicFR.set(-leftThumb);
-    	vicBR.set(-leftThumb);
+    	canFR.set(-leftThumb);
+    	canBR.set(-leftThumb);
 
     	}
 
@@ -262,11 +404,11 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb>0.1) && (rightThumb>0.1)) {
 
-    	vicFL.set(leftThumb - (rightThumb * 0.9));
-    	vicBL.set(leftThumb - (rightThumb * 0.9));
+    	canFL.set(leftThumb - (rightThumb * 0.9));
+    	canBL.set(leftThumb - (rightThumb * 0.9));
     	    
-    	vicFR.set(-(leftThumb));
-    	vicBR.set(-(leftThumb));
+    	canFR.set(-(leftThumb));
+    	canBR.set(-(leftThumb));
 
     	}
 
@@ -274,11 +416,11 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb>0.1) && (rightThumb<-0.1)) {
 
-    	vicFL.set(leftThumb);
-    	vicBL.set(leftThumb);
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
     	    
-    	vicFR.set(-(leftThumb + (rightThumb * 0.9)));
-    	vicBR.set(-(leftThumb + (rightThumb * 0.9)));
+    	canFR.set(-(leftThumb + (rightThumb * 0.9)));
+    	canBR.set(-(leftThumb + (rightThumb * 0.9)));
 
     	}
 
@@ -286,11 +428,11 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb<-0.1) && (rightThumb>0.1)) {
 
-    	vicFL.set(leftThumb + (rightThumb * 0.9));
-    	vicBL.set(leftThumb + (rightThumb * 0.9));
+    	canFL.set(leftThumb + (rightThumb * 0.9));
+    	canBL.set(leftThumb + (rightThumb * 0.9));
     	    
-    	vicFR.set(-(leftThumb));
-    	vicBR.set(-(leftThumb));
+    	canFR.set(-(leftThumb));
+    	canBR.set(-(leftThumb));
 
     	}
 
@@ -298,27 +440,202 @@ public class Robot extends IterativeRobot {
 
     	if((leftThumb<-0.1) && (rightThumb<-0.1)) {
 
-    	vicFL.set(leftThumb);
-    	vicBL.set(leftThumb);
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
     	    
-    	vicFR.set(-(leftThumb - (rightThumb * 0.9)));
-    	vicBR.set(-(leftThumb - (rightThumb * 0.9)));
+    	canFR.set(-(leftThumb - (rightThumb * 0.9)));
+    	canBR.set(-(leftThumb - (rightThumb * 0.9)));
     	
     	}
     	
+    	//Winch Motor [Y = Up B = Down]
     	
-    	if (joy.getRawButton(1)==false) {stillPressed=false;}
-    	if (joy.getRawButton(1)&&(stillPressed==false)){
-    		if (gearShift.get()==DoubleSolenoid.Value.kForward)
+    	if(joy.getRawButton(4) == true){
+    		
+    		canWinch.set(2);
+    	}
+    	
+    	if(joy.getRawButton(2) == true){
+    		
+    		canWinch.set(-2);
+    	}
+    	
+    	//Kicker [Triggers] Controller 1
+    	
+    	leftTrig = (joy.getRawAxis(2));
+    	rightTrig = (joy.getRawAxis(3));
+    	
+    	if((leftTrig > 0) && (rightTrig == 0)){
+    		
+    		canKicker.set(leftTrig);
+    	}
+    	
+    	if((rightTrig > 0) && (leftTrig == 0)){
+    		
+    		canKicker.set(rightTrig);
+    	}
+    	
+    	//Kicker [Triggers] Controller 2
+    	
+    	leftTrig2 = (joy2.getRawAxis(2));
+    	rightTrig2 = (joy2.getRawAxis(3));
+    	
+    	if((leftTrig2 > 0) && (rightTrig2 == 0)){
+    		
+    		canKicker.set(leftTrig2);
+    	}
+    	
+    	if((rightTrig2 > 0) && (leftTrig2 == 0)){
+    		
+    		canKicker.set(rightTrig2);
+    	}
+    	
+    	//Gear Shifting [Right Thumbstick Button]
+    	
+    	if (joy.getRawButton(8) == false) {stillPressed = false;}
+    	
+    	if (joy.getRawButton(8) && (stillPressed == false)){
+    		
+    		if (gearShift.get() == DoubleSolenoid.Value.kForward)
     			{
     			gearShift.set(DoubleSolenoid.Value.kReverse);  		
     			stillPressed=true;
     			}
-    		else {
+    		else{
     			gearShift.set(DoubleSolenoid.Value.kForward);
     			stillPressed=true;
     		}
     	}
+    	
+    	//Arms Toggle [LB] Controller 1
+    	
+    	if (joy.getRawButton(5) == false) {stillPressed2 = false;}
+    		
+    	if (joy.getRawButton(5) && (stillPressed2 == false)){
+    		
+    		if (armChange.get() == DoubleSolenoid.Value.kForward)
+   				{
+   				armChange.set(DoubleSolenoid.Value.kReverse);  		
+   				stillPressed2=true;
+   				}
+    		else {
+    			armChange.set(DoubleSolenoid.Value.kForward);
+    			stillPressed2=true;
+    		}
+    	}
+    	
+    	//Arm Toggle [LB] Controller 2
+    	
+    	if (joy2.getRawButton(5) == false) {stillPressed4 = false;}
+		
+    	if (joy2.getRawButton(5) && (stillPressed4 == false)){
+    		
+    		if (armChange.get() == DoubleSolenoid.Value.kForward)
+   				{
+   				armChange.set(DoubleSolenoid.Value.kReverse);  		
+   				stillPressed4=true;
+   				}
+    		else {
+    			armChange.set(DoubleSolenoid.Value.kForward);
+    			stillPressed4=true;
+    		}
+    	}
+    	
+    	//Flipper [RB]
+    	
+    		if (joy.getRawButton(6) == false) {stillPressed3 = false;}
+    		
+    		if (joy.getRawButton(6) && (stillPressed3 == false)){
+    		
+    			if (flipper.get() == DoubleSolenoid.Value.kForward)
+    				{
+    				flipper.set(DoubleSolenoid.Value.kReverse);  		
+    				stillPressed3=true;
+    				}
+    			else{
+    				flipper.set(DoubleSolenoid.Value.kForward);
+    				stillPressed3=true;
+    		}
+    	}	
+    		
+    	//Arms Motors [Joysticks Controller 2]
+    		
+    		leftThumb2=(-(joy2.getRawAxis(1)));
+        	rightThumb2=(joy2.getRawAxis(4));
+        
+        	//If left thumbstick is still
+
+        	if((leftThumb2>-0.1) && (leftThumb2<0.1)) {
+
+        	canFL.set(-(rightThumb2));
+        	canBL.set(-(rightThumb2));
+        	    
+        	canFR.set(-(rightThumb2));
+        	canBR.set(-(rightThumb2));
+
+        	}
+
+        	//If right thumbstick is still
+
+        	if((rightThumb2>-0.1) && (rightThumb2<0.1)) {
+
+        	canFL.set(leftThumb2);
+        	canBL.set(leftThumb2);
+        	    
+        	canFR.set(-leftThumb2);
+        	canBR.set(-leftThumb2);
+
+        	}
+
+        	//If left thumbstick is positive and right thumbstick is positive
+
+        	if((leftThumb2>0.1) && (rightThumb2>0.1)) {
+
+        	canFL.set(leftThumb2 - (rightThumb2 * 0.9));
+        	canBL.set(leftThumb2 - (rightThumb2 * 0.9));
+        	    
+        	canFR.set(-(leftThumb2));
+        	canBR.set(-(leftThumb2));
+
+        	}
+
+        	//If left thumbstick is positive and right thumbstick is negative
+
+        	if((leftThumb2>0.1) && (rightThumb2<-0.1)) {
+
+        	canFL.set(leftThumb2);
+        	canBL.set(leftThumb2);
+        	    
+        	canFR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
+        	canBR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
+
+        	}
+
+        	//If left thumbstick is negative and right thumbstick is positive
+
+        	if((leftThumb2<-0.1) && (rightThumb2>0.1)) {
+
+        	canFL.set(leftThumb2 + (rightThumb2 * 0.9));
+        	canBL.set(leftThumb2 + (rightThumb2 * 0.9));
+        	    
+        	canFR.set(-(leftThumb2));
+        	canBR.set(-(leftThumb2));
+
+        	}
+
+        	//If left thumbstick is negative and right thumbstick is negative
+
+        	if((leftThumb2<-0.1) && (rightThumb2<-0.1)) {
+
+        	canFL.set(leftThumb2);
+        	canBL.set(leftThumb2);
+        	    
+        	canFR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
+        	canBR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
+        	
+        	}
+        	
+    	
     	System.out.print(comp.getPressureSwitchValue());
     	System.out.print(comp.getCompressorCurrent());
     	System.out.print(comp.enabled());
