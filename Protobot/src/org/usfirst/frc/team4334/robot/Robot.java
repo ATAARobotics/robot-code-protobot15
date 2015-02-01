@@ -14,7 +14,7 @@
 
 
 package org.usfirst.frc.team4334.robot;
-
+import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -47,19 +47,20 @@ public class Robot extends IterativeRobot {
     Victor vicBR;
     Compressor comp;
     DoubleSolenoid gearShift;
+    CANTalon Bob = new CANTalon (0);
     double leftThumb,rightThumb;
 	boolean stillPressed;
 	int stage;
 	
+	
 	int leftR;
 	int rightR;
-
+    
 	
 	Encoder encoderL;
 	Encoder encoderR;
     
     public void robotInit() {
-    
     vicFL = new Victor(0);
 	vicBL = new Victor(1);
 	vicFR = new Victor(2);
