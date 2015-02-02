@@ -39,6 +39,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 
 
 /**
@@ -70,7 +72,9 @@ public class Robot extends IterativeRobot {
     
     Encoder encoderL;
 	Encoder encoderR;
-    
+	
+	Potentiometer pot1;
+	
 	Compressor comp;
     DoubleSolenoid gearShift;
     DoubleSolenoid armChange;
@@ -80,6 +84,7 @@ public class Robot extends IterativeRobot {
     double leftThumb2,rightThumb2;
     double leftTrig,rightTrig;
     double leftTrig2,rightTrig2;
+    double degrees;
 	
     boolean stillPressed;
     boolean stillPressed2;
@@ -105,6 +110,8 @@ public class Robot extends IterativeRobot {
     comp  = new Compressor(0);
     comp.setClosedLoopControl(true);
     
+    pot1 = new AnalogPotentiometer(0, 300, 0);
+    
     armChange = new DoubleSolenoid(2, 3);
     armChange.set(DoubleSolenoid.Value.kForward);
     gearShift = new DoubleSolenoid(0, 1);
@@ -117,7 +124,7 @@ public class Robot extends IterativeRobot {
 	encoderL.reset();
 	encoderR.reset();
     
-    stage = 1;
+    stage = 0;
     }
 
     
@@ -129,6 +136,19 @@ public class Robot extends IterativeRobot {
  
 		leftR = encoderL.get();
     	rightR = encoderR.get();
+    	degrees = pot1.get();
+    	
+    	if(stage == 0){
+    		
+    		if(degrees > 70){
+    			
+    			stage = 1;
+    			
+    			encoderR.reset();
+    			encoderL.reset();
+    		}
+    		
+    	}
     	
     	if(stage == 1){
     	
@@ -382,7 +402,7 @@ public class Robot extends IterativeRobot {
 
     	canFL.set(-(rightThumb));
     	canBL.set(-(rightThumb));
-    	    
+ 
     	canFR.set(-(rightThumb));
     	canBR.set(-(rightThumb));
 
@@ -472,7 +492,7 @@ public class Robot extends IterativeRobot {
     	
     	if((rightTrig > 0) && (leftTrig == 0)){
     		
-    		canKicker.set(rightTrig);
+    		canKicker.set(-rightTrig);
     	}
     	
     	//Kicker [Triggers] Controller 2
