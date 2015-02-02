@@ -52,6 +52,7 @@ import edu.wpi.first.wpilibj.interfaces.Potentiometer;
  */
 
 
+
 public class Robot extends IterativeRobot {
     
     //This function is run when the robot is first started up and should be
@@ -395,78 +396,8 @@ public class Robot extends IterativeRobot {
     	
     	leftThumb=(-(joy.getRawAxis(1)));
     	rightThumb=(joy.getRawAxis(4));
-    	
-    	//If left thumbstick is still
-
-    	if((leftThumb>-0.1) && (leftThumb<0.1)) {
-
-    	canFL.set(-(rightThumb));
-    	canBL.set(-(rightThumb));
- 
-    	canFR.set(-(rightThumb));
-    	canBR.set(-(rightThumb));
-
-    	}
-
-    	//If right thumbstick is still
-
-    	if((rightThumb>-0.1) && (rightThumb<0.1)) {
-
-    	canFL.set(leftThumb);
-    	canBL.set(leftThumb);
-    	    
-    	canFR.set(-leftThumb);
-    	canBR.set(-leftThumb);
-
-    	}
-
-    	//If left thumbstick is positive and right thumbstick is positive
-
-    	if((leftThumb>0.1) && (rightThumb>0.1)) {
-
-    	canFL.set(leftThumb - (rightThumb * 0.9));
-    	canBL.set(leftThumb - (rightThumb * 0.9));
-    	    
-    	canFR.set(-(leftThumb));
-    	canBR.set(-(leftThumb));
-
-    	}
-
-    	//If left thumbstick is positive and right thumbstick is negative
-
-    	if((leftThumb>0.1) && (rightThumb<-0.1)) {
-
-    	canFL.set(leftThumb);
-    	canBL.set(leftThumb);
-    	    
-    	canFR.set(-(leftThumb + (rightThumb * 0.9)));
-    	canBR.set(-(leftThumb + (rightThumb * 0.9)));
-
-    	}
-
-    	//If left thumbstick is negative and right thumbstick is positive
-
-    	if((leftThumb<-0.1) && (rightThumb>0.1)) {
-
-    	canFL.set(leftThumb + (rightThumb * 0.9));
-    	canBL.set(leftThumb + (rightThumb * 0.9));
-    	    
-    	canFR.set(-(leftThumb));
-    	canBR.set(-(leftThumb));
-
-    	}
-
-    	//If left thumbstick is negative and right thumbstick is negative
-
-    	if((leftThumb<-0.1) && (rightThumb<-0.1)) {
-
-    	canFL.set(leftThumb);
-    	canBL.set(leftThumb);
-    	    
-    	canFR.set(-(leftThumb - (rightThumb * 0.9)));
-    	canBR.set(-(leftThumb - (rightThumb * 0.9)));
-    	
-    	}
+    
+    	arcadeMode();
     	
     	//Winch Motor [Y = Up B = Down]
     	
@@ -582,80 +513,9 @@ public class Robot extends IterativeRobot {
     		
     		leftThumb2=(-(joy2.getRawAxis(1)));
         	rightThumb2=(joy2.getRawAxis(4));
-        
-        	//If left thumbstick is still
-
-        	if((leftThumb2>-0.1) && (leftThumb2<0.1)) {
-
-        	canFL.set(-(rightThumb2));
-        	canBL.set(-(rightThumb2));
-        	    
-        	canFR.set(-(rightThumb2));
-        	canBR.set(-(rightThumb2));
-
-        	}
-
-        	//If right thumbstick is still
-
-        	if((rightThumb2>-0.1) && (rightThumb2<0.1)) {
-
-        	canFL.set(leftThumb2);
-        	canBL.set(leftThumb2);
-        	    
-        	canFR.set(-leftThumb2);
-        	canBR.set(-leftThumb2);
-
-        	}
-
-        	//If left thumbstick is positive and right thumbstick is positive
-
-        	if((leftThumb2>0.1) && (rightThumb2>0.1)) {
-
-        	canFL.set(leftThumb2 - (rightThumb2 * 0.9));
-        	canBL.set(leftThumb2 - (rightThumb2 * 0.9));
-        	    
-        	canFR.set(-(leftThumb2));
-        	canBR.set(-(leftThumb2));
-
-        	}
-
-        	//If left thumbstick is positive and right thumbstick is negative
-
-        	if((leftThumb2>0.1) && (rightThumb2<-0.1)) {
-
-        	canFL.set(leftThumb2);
-        	canBL.set(leftThumb2);
-        	    
-        	canFR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
-        	canBR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
-
-        	}
-
-        	//If left thumbstick is negative and right thumbstick is positive
-
-        	if((leftThumb2<-0.1) && (rightThumb2>0.1)) {
-
-        	canFL.set(leftThumb2 + (rightThumb2 * 0.9));
-        	canBL.set(leftThumb2 + (rightThumb2 * 0.9));
-        	    
-        	canFR.set(-(leftThumb2));
-        	canBR.set(-(leftThumb2));
-
-        	}
-
-        	//If left thumbstick is negative and right thumbstick is negative
-
-        	if((leftThumb2<-0.1) && (rightThumb2<-0.1)) {
-
-        	canFL.set(leftThumb2);
-        	canBL.set(leftThumb2);
-        	    
-        	canFR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
-        	canBR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
+ 
+    	armMotors();
         	
-        	}
-        	
-    	
     	System.out.print(comp.getPressureSwitchValue());
     	System.out.print(comp.getCompressorCurrent());
     	System.out.print(comp.enabled());
@@ -671,4 +531,154 @@ public class Robot extends IterativeRobot {
     
     }
     
+    public void arcadeMode() {
+    	
+    	//If left thumbstick is still
+
+    	if((leftThumb>-0.1) && (leftThumb<0.1)) {
+
+    	canFL.set(-(rightThumb));
+    	canBL.set(-(rightThumb));
+ 
+    	canFR.set(-(rightThumb));
+    	canBR.set(-(rightThumb));
+
+    	}
+
+    	//If right thumbstick is still
+
+    	if((rightThumb>-0.1) && (rightThumb<0.1)) {
+
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
+    	    
+    	canFR.set(-leftThumb);
+    	canBR.set(-leftThumb);
+
+    	}
+
+    	//If left thumbstick is positive and right thumbstick is positive
+
+    	if((leftThumb>0.1) && (rightThumb>0.1)) {
+
+    	canFL.set(leftThumb - (rightThumb * 0.9));
+    	canBL.set(leftThumb - (rightThumb * 0.9));
+    	    
+    	canFR.set(-(leftThumb));
+    	canBR.set(-(leftThumb));
+
+    	}
+
+    	//If left thumbstick is positive and right thumbstick is negative
+
+    	if((leftThumb>0.1) && (rightThumb<-0.1)) {
+
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
+    	    
+    	canFR.set(-(leftThumb + (rightThumb * 0.9)));
+    	canBR.set(-(leftThumb + (rightThumb * 0.9)));
+
+    	}
+
+    	//If left thumbstick is negative and right thumbstick is positive
+
+    	if((leftThumb<-0.1) && (rightThumb>0.1)) {
+
+    	canFL.set(leftThumb + (rightThumb * 0.9));
+    	canBL.set(leftThumb + (rightThumb * 0.9));
+    	    
+    	canFR.set(-(leftThumb));
+    	canBR.set(-(leftThumb));
+
+    	}
+
+    	//If left thumbstick is negative and right thumbstick is negative
+
+    	if((leftThumb<-0.1) && (rightThumb<-0.1)) {
+
+    	canFL.set(leftThumb);
+    	canBL.set(leftThumb);
+    	    
+    	canFR.set(-(leftThumb - (rightThumb * 0.9)));
+    	canBR.set(-(leftThumb - (rightThumb * 0.9)));
+    	
+    	}
+    	
+   }
+}
+
+	public void armMotors() {	
+	
+	//If left thumbstick is still
+
+	if((leftThumb2>-0.1) && (leftThumb2<0.1)) {
+
+	canFL.set(-(rightThumb2));
+	canBL.set(-(rightThumb2));
+	    
+	canFR.set(-(rightThumb2));
+	canBR.set(-(rightThumb2));
+
+	}
+
+	//If right thumbstick is still
+
+	if((rightThumb2>-0.1) && (rightThumb2<0.1)) {
+
+	canFL.set(leftThumb2);
+	canBL.set(leftThumb2);
+	    
+	canFR.set(-leftThumb2);
+	canBR.set(-leftThumb2);
+
+	}
+
+	//If left thumbstick is positive and right thumbstick is positive
+
+	if((leftThumb2>0.1) && (rightThumb2>0.1)) {
+
+	canFL.set(leftThumb2 - (rightThumb2 * 0.9));
+	canBL.set(leftThumb2 - (rightThumb2 * 0.9));
+	    
+	canFR.set(-(leftThumb2));
+	canBR.set(-(leftThumb2));
+
+	}
+
+	//If left thumbstick is positive and right thumbstick is negative
+
+	if((leftThumb2>0.1) && (rightThumb2<-0.1)) {
+
+	canFL.set(leftThumb2);
+	canBL.set(leftThumb2);
+	    
+	canFR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
+	canBR.set(-(leftThumb2 + (rightThumb2 * 0.9)));
+
+	}
+
+	//If left thumbstick is negative and right thumbstick is positive
+
+	if((leftThumb2<-0.1) && (rightThumb2>0.1)) {
+
+	canFL.set(leftThumb2 + (rightThumb2 * 0.9));
+	canBL.set(leftThumb2 + (rightThumb2 * 0.9));
+	    
+	canFR.set(-(leftThumb2));
+	canBR.set(-(leftThumb2));
+
+	}
+
+	//If left thumbstick is negative and right thumbstick is negative
+
+	if((leftThumb2<-0.1) && (rightThumb2<-0.1)) {
+
+	canFL.set(leftThumb2);
+	canBL.set(leftThumb2);
+	    
+	canFR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
+	canBR.set(-(leftThumb2 - (rightThumb2 * 0.9)));
+	
+	}
 }
