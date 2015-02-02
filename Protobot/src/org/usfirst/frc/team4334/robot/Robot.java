@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Victor;
 
 
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the IterativeRobot
@@ -47,8 +48,10 @@ public class Robot extends IterativeRobot {
     Victor vicBR;
     Compressor comp;
     DoubleSolenoid gearShift;
-    CANTalon Bob = new CANTalon (0);
-    double leftThumb,rightThumb;
+    CANTalon Bob;
+    
+    // Potentiometers can break if the motor is spun the wrong way
+    double leftThumb,rightThumb, CANThumb;
 	boolean stillPressed;
 	int stage;
 	
@@ -72,10 +75,10 @@ public class Robot extends IterativeRobot {
     gearShift = new DoubleSolenoid(0, 1);
     gearShift.set(DoubleSolenoid.Value.kForward);
     comp.setClosedLoopControl(true);
-    
+   
     encoderR = new Encoder(1, 2, true, EncodingType.k4X);
 	encoderL = new Encoder(3, 4, true, EncodingType.k4X);
-	
+	Bob = new CANTalon (1);
 	encoderL.reset();
 	encoderR.reset();
 	
@@ -84,7 +87,6 @@ public class Robot extends IterativeRobot {
     stage = 1;
     }
 
-    
     
      //This function is called periodically during autonomous
      
@@ -424,7 +426,10 @@ public class Robot extends IterativeRobot {
     	System.out.print(comp.getCompressorCurrent());
     	System.out.print(comp.enabled());
     	System.out.print("/");
-    
+    	
+    	
+    	CANThumb = (joy.getRawAxis(5));
+    	Bob.set(CANThumb);
    }
     
     
