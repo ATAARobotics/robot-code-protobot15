@@ -42,9 +42,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Talon;
-import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 
@@ -91,6 +89,8 @@ public class Robot extends IterativeRobot {
     DigitalInput limit2;
     String ElevatorEncoder;
     String camPot;
+    String limitLow;
+    String limitHigh;
     
     double leftThumb2,rightThumb2;
     double leftTrig,rightTrig;
@@ -108,6 +108,7 @@ public class Robot extends IterativeRobot {
     boolean stillPressed5;
     boolean stillPressed6;
     boolean stillPressed7;
+    boolean stillPressed8;
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
@@ -122,6 +123,7 @@ public class Robot extends IterativeRobot {
 	int range1;
 	int range2;
 	int elevatorRange;
+	int case1, case2, case3;
     
     public void robotInit() {
     
@@ -141,6 +143,8 @@ public class Robot extends IterativeRobot {
     
     ElevatorEncoder = "Encoder";
     camPot = "Cam Potentiometer";
+    limitLow = "Limit switch bottom";
+    limitHigh = "Limit Switch top";
     
     joy = new Joystick(0);
     joy2 = new Joystick(1);
@@ -199,41 +203,43 @@ public class Robot extends IterativeRobot {
     	
     	Elevator();
     	
-    	camManualSetpoint();
+    	camRetract();
     	
     	pneumatics();
     	
     	camFullManual();
     	
+    	elevatorOneTote();
     	
-    	if (joy2.getRawButton(6) == false) {stillPressed7 = false;}
+    	elevatorLow();
     	
-    	if (joy2.getRawButton(6) && (stillPressed7 == false))
+    	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
+    	
+    	if (joy2.getRawButton(6) && (stillPressed8 == false))
     	{	
     		if (camMode == 1)
     			{
-    			camMode = 2;  		
-    			stillPressed=true;
+    				camMode = 2;
     			}
-    		else
+    		else if(camMode == 2)
     		{
     			camMode = 1;
-    			stillPressed=true;
     		}
     	}
+    	
  //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     	
     	//SmartDashboard Crap
     	
     	potDegrees = pot1.getVoltage();
     	
-    	elevatorR = encoderElevator.get();
-    	
-    	SmartDashboard.putString("Jimmy is damn cool, fuck yea!!!!", " ");
-    	
     	SmartDashboard.putNumber(ElevatorEncoder, elevatorR);
     	
     	SmartDashboard.putNumber(camPot, potDegrees);
+    	
+    	SmartDashboard.putBoolean(limitLow, elevatorMin);
+    	
+    	SmartDashboard.putBoolean(limitHigh, elevatorMax);
    }
 
      //This function is called periodically during test mode
@@ -243,73 +249,127 @@ public class Robot extends IterativeRobot {
     
     }
     
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
     
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
-    
-    public void elevatorSetpoints()
+    public void elevatorHigh()
     {
-
-    	//Going from 1 tote setpoint to lowest setpoint
     	
-    	if (joy2.getRawButton(1) == false) {stillPressed6 = false;}
+    }
+    
+    public void elevatorLow()
+    {
+    	if (joy2.getRawButton(1) == false) {stillPressed7 = false;}
     	
-    	
-    	if (joy2.getRawButton(1) && (stillPressed6 == false))
+    	if (joy2.getRawButton(1) && (stillPressed7 == false))
     	{
-    		stillPressed6 = true;
-    		fullDown = true;
-    		camRetract = true;
+    		elevatorMax = limit1.get();
     		
-    		if((potDegrees > 10) && (camRetract == true))
-    		{
-    			talKicker.set(1);
-    			camMode = 3;
-    		}
-    		
-    		if((elevatorR < range1) && (fullDown == true))
-    		{
-    			elevatorManual = false;
+    		if(elevatorMax = true)
+        	{
+        		case3 = 1;
         		
-        		canWinch.set(1);
-        		canWinch2.set(1);
-    		}
-    	}
-    	
-    	if(elevatorR < 240)
-    	{
-    		fullDown = false;
-    		elevatorManual = true;
-    	}
-    	
-    	if(potDegrees < 10)
-    	{
-    		camRetract = false;
+        	}
+        	
+        	switch(case3)
+        	{
+        		case 1:
+        		{
+        			while(elevatorMin == true)
+            		{
+        				elevatorMin = limit2.get();
+        				
+            			canWinch.set(0.68);
+            			canWinch.set(0.68);
+            		}
+        		}
+        		
+        		case 2:
+        		{
+        			canWinch.set(0);
+        			canWinch2.set(0);
+        			break;
+        		}
+        		
+        		
+        	}
     	}
     }
+    
+    public void elevatorOneTote()
+    {
+
+    	if (joy2.getRawButton(4) == false) {stillPressed6 = false;}
+    	
+    	if (joy2.getRawButton(4) && (stillPressed6 == false))
+    	{
+    		elevatorR = encoderElevator.get();
+    		
+    		if(elevatorR < 10447)
+        	{
+        		case1 = 1;
+        		
+        	}
+        	
+        	if(elevatorR > 10447)
+        	{
+        		case1 = 3;
+        	}
+        
+        	switch(case1)
+        	{
+        		case 1:
+        		{
+        			while(elevatorR < 10447)
+            		{
+        				elevatorR = encoderElevator.get();
+        				
+            			canWinch.set(-0.8);
+            			canWinch.set(-0.8);
+            		}
+        		}
+        		
+        		case 2:
+        		{
+        			canWinch.set(0);
+        			canWinch2.set(0);
+        			break;
+        		}
+        		
+        		case 3:
+        		{
+        			while(elevatorR > 10447)
+            		{
+        				elevatorR = encoderElevator.get();
+        				
+            			canWinch.set(0.8);
+            			canWinch.set(0.8);
+            		}
+        		}
+        		
+        		case 4:
+        		{
+        			canWinch.set(0);
+        			canWinch2.set(0);
+        			break;
+        		}
+        	}
+    	}
+    }
+    
     public void camFullManual()
     {
     	if(camMode == 2)
     	{
-    		if((joy.getRawButton(7) == true) && (joy.getRawButton(8) == true))
+    		if(joy.getRawButton(8) == false)
     		{
     			talKicker.set(0);
     		}
     	
-    		if((joy.getRawButton(7) == false) && (joy.getRawButton(8) == false))
-    		{
-    			talKicker.set(0);
-    		}
-    	
-    		if((joy.getRawButton(7) == true) && (joy.getRawButton(8) == false))
-    		{
-    			talKicker.set(1);
-    		}
-    	
-    		if((joy.getRawButton(7) == false) && (joy.getRawButton(8) == true))
+    		if(joy.getRawButton(8) == true)
     		{
     			talKicker.set(-1);
     		}
+
     	}
     }
     
@@ -319,6 +379,7 @@ public class Robot extends IterativeRobot {
     }
     
     public void pneumatics()
+    
     {
     	//Gear Shifting [Right Thumbstick Button]
     	
@@ -395,43 +456,44 @@ public class Robot extends IterativeRobot {
     			}
     		}	
     }
-    
-    public void camManualSetpoint()
-    {
-        if (joy2.getRawButton(2) == false) {stillPressed5 = false;}
        
-       	if(camMode == 1)
-       	{
-       		if ((joy2.getRawButton(2) == true) && (stillPressed5 == false))
-       		{
-       			stillPressed5 = true;
-       			camCancel1 = true;
-       			
-       			if (pot1.getVoltage() <= 2.4)
-       			{
-       				talKicker.set(-1);
-       			}
-       			if(pot1.getVoltage() > 2.4)
-       			{
-       				talKicker.set(1);
-       			}
-       		}
-       	}
-       	
-       	if((pot1.getVoltage() < 4.624) && (pot1.getVoltage() > 0.177))
-       	{
-       		camCancel1 = false;
-       	}
-
-        if((pot1.getVoltage() > 4.624) && (camCancel1 == false))
+    public void camRetract()
+    {
+    	if (joy2.getRawButton(2) == false) {stillPressed5 = false;}
+    	
+    	if (joy2.getRawButton(2) && (stillPressed5 == false))
     	{
-   			talKicker.set(0);
-   		}
-       	if((pot1.getVoltage() < 0.177) && (camCancel1 == false))
-   		{
-   			talKicker.set(0);
-   		}
+    		potDegrees = pot1.getVoltage();
+    		
+    		if(potDegrees < 4.622)
+        	{
+        		case2 = 1;
+        		
+        	}
+        	
+        	switch(case2)
+        	{
+        		case 1:
+        		{
+        			while(potDegrees < 4.622)
+            		{
+        				potDegrees = pot1.getVoltage();
+        				
+            			talKicker.set(1);
+            		}
+        		}
+        		
+        		case 2:
+        		{
+        			talKicker.set(0);
+        			break;
+        		}
+        		
+        		
+        	}
+    	}
     }
+        
     public void ArcadeDrive()
     {
     	q = (joy.getRawAxis(4));
@@ -511,11 +573,11 @@ public class Robot extends IterativeRobot {
     	}
 
     }
-    
+       
     public void ArmMotors()
     {
-    	//Arms Motors [Thumbsticks Controller 2]
-		
+    	//Arm motors
+    	
 		leftThumb2=(joy2.getRawAxis(1));
     	rightThumb2=(joy2.getRawAxis(4));
     	
@@ -575,9 +637,10 @@ public class Robot extends IterativeRobot {
     		talArmRight.set(-(leftThumb2 - (rightThumb2 * 0.9))); 	
     	}
     }
-    
+        
     public void Elevator()
     {
+    	
     	//Elevator Motors [Y = Up B = Down]
     	
     	elevatorMax = limit1.get();
@@ -585,13 +648,13 @@ public class Robot extends IterativeRobot {
     
     	if(elevatorManual = true)
     	{
-    		if((joy2.getRawButton(5) == true) && (joy2.getRawButton(6) == true))
+    		if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == true))
         	{
         		canWinch.set(0);
         		canWinch2.set(0);
         	}
         	
-        	if((joy2.getRawButton(5) == false) && (joy2.getRawButton(6) == false))
+        	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == false))
         	{
         		canWinch.set(0);
         		canWinch2.set(0);
@@ -599,15 +662,30 @@ public class Robot extends IterativeRobot {
         	
         	if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == false) && (elevatorMin == true))
         	{
-        		canWinch.set(0.3);
-        		canWinch2.set(0.3);
+        		canWinch.set(0.5);
+        		canWinch2.set(0.5);
         	}
         	
         	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == true) && (elevatorMax == true))
         	{
-        		canWinch.set(-0.3);
-        		canWinch2.set(-0.3);
+        		if(elevatorR <= 12000)
+        		{
+        			canWinch.set(-0.5);
+            		canWinch2.set(-0.5);
+        		}	
+        		
+        		if(elevatorR > 12000)
+        		{
+        			canWinch.set(-0.3);
+        			canWinch2.set(-0.3);
+        		}
         	}
         }
+    	
+    	if(joy.getRawButton(7) == true)
+    	{
+    		encoderElevator.reset();
+    	}
     }
+    
 }
