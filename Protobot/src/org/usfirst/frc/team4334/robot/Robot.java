@@ -129,7 +129,7 @@ public class Robot extends IterativeRobot {
 	int elevatorRange;
 	int case1, case2, case3;
 	int i;
-	
+	  boolean testbool = false;	
     public void robotInit() {
     
     canFL = new CANTalon(1);
@@ -146,7 +146,7 @@ public class Robot extends IterativeRobot {
     elevatorRange = 15900;
     camMode = 1;
     i = 0;
-    
+ 
     ElevatorEncoder = "Elevator Encoder:";
     camPot = "Cam Potentiometer:";
     limitLow = "Bottom Limit Switch:";
@@ -179,7 +179,8 @@ public class Robot extends IterativeRobot {
 	//encoderL.reset();
 	//encoderR.reset();
     encoderElevator.reset();
-  
+	gotoSpot=false;
+
     stage = 0;
     }
 
@@ -204,6 +205,8 @@ public class Robot extends IterativeRobot {
     	range1 = 240;
     	range2 = 19000;
     	    	
+    	ArcadeDrive();
+    	
     	ArmMotors();
     	
     	Elevator();
@@ -269,16 +272,13 @@ public class Robot extends IterativeRobot {
     	}
     	
     	
-    	if (gotoSpot==true){
+    	if ((gotoSpot==true)&&(limit1.get()==true)){
     		if (encoderElevator.get() < 10500){
     			canWinch.set(-0.8);
     			canWinch2.set(-0.8);
     			}
-    		else if(encoderElevator.get() > 10400) {
-    			canWinch.set(0.8);
-    			canWinch2.set(0.8);
     			
-    		}
+    		
     		else {
     			gotoSpot=false;
     		}
@@ -309,7 +309,7 @@ public class Robot extends IterativeRobot {
     
     public void elevatorLow()
     {
-    	
+    /*	
     	{
     		//camRetract();
     		
@@ -343,6 +343,7 @@ public class Robot extends IterativeRobot {
         		}
         	}
     	}
+    	*/
     }
     
     public void elevatorHigh()
