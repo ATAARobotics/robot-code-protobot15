@@ -94,8 +94,6 @@ public class Robot extends IterativeRobot {
     String limitHigh;
     String gearPos, gearPos2;
     
-    Thread oneTote = new Thread(new setPointOne());
-    Thread drivetrain = new Thread(new drivetrain());
     
     double leftThumb2,rightThumb2;
     double leftTrig,rightTrig;
@@ -115,13 +113,14 @@ public class Robot extends IterativeRobot {
     boolean stillPressed7;
     boolean stillPressed8;
     boolean stillPressed9;
+    boolean stillPressed10;
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
     boolean fullDown;
     boolean camSetPoint = false;
     boolean camCancel1;
-	
+	boolean gotoSpot;
 	int stage;
 	int camMode;
 	int leftR, rightR, elevatorR;
@@ -204,9 +203,7 @@ public class Robot extends IterativeRobot {
     	
     	range1 = 240;
     	range2 = 19000;
-    	
-    	drivetrain.start();
-    	
+    	    	
     	ArmMotors();
     	
     	Elevator();
@@ -262,7 +259,30 @@ public class Robot extends IterativeRobot {
     	if (joy2.getRawButton(3) == false) {stillPressed9 = false;}
     	
     	if (joy2.getRawButton(3) && (stillPressed9 == false) && (elevatorManual == false))
+    		
     	
+    	
+    	if (joy2.getRawButton(4) == false) {stillPressed10 = false;}
+    	
+    	if (joy2.getRawButton(4) && (stillPressed10 == false)){
+    	 gotoSpot = true;
+    	}
+    	
+    	
+    	if (gotoSpot==true){
+    		if (encoderElevator.get() < 10500){
+    			canWinch.set(-0.8);
+    			canWinch2.set(-0.8);
+    			}
+    		else if(encoderElevator.get() > 10400) {
+    			canWinch.set(0.8);
+    			canWinch2.set(0.8);
+    			
+    		}
+    		else {
+    			gotoSpot=false;
+    		}
+    	}
  //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     	
     	//SmartDashboard
@@ -392,7 +412,7 @@ public class Robot extends IterativeRobot {
     	
     	if (joy2.getRawButton(4) && (stillPressed6 == false))
     	{
-    		oneTote.start();
+    		
     		
     		//camExtend();
     		
@@ -727,7 +747,7 @@ public class Robot extends IterativeRobot {
         	{
 
         		elevatorManual = true;
-        		
+        		gotoSpot=false;
         		canWinch.set(0.5);
         		canWinch2.set(0.5);
         	}
@@ -736,7 +756,7 @@ public class Robot extends IterativeRobot {
         	{
 
         		elevatorManual = true;
-        		
+        		gotoSpot=false;
         		if(elevatorR <= 12000)
         		{
         			canWinch.set(-0.5);
@@ -757,82 +777,4 @@ public class Robot extends IterativeRobot {
     	}
     }
  
-    class setPointOne implements Runnable
-    {
-    	public void run()
-    	{
-    		
-    		leftArm.set(DoubleSolenoid.Value.kForward);
-    		rightArm.set(DoubleSolenoid.Value.kForward);
-    		
-    		elevatorR = encoderElevator.get();
-    		
-    		if((elevatorR < 10447) && (elevatorManual == false))
-        	{
-        		case1 = 1;
-        		
-        	}
-        	
-        	if((elevatorR > 10447) && (elevatorManual == false))
-        	{
-        		case1 = 3;
-        	}
-        
-        	switch(case1)
-        	{
-        		case 1:
-        		{
-        			while((elevatorR < 10447) && (elevatorManual == false))
-            		{
-        				elevatorR = encoderElevator.get();
-        				
-            			canWinch.set(-0.8);
-            			canWinch.set(-0.8);
-            		}
-        		}
-        		
-        		case 2:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        		
-        		case 3:
-        		{
-        			while((elevatorR > 10447) && (elevatorManual == false))
-            		{
-        				elevatorR = encoderElevator.get();
-        				
-            			canWinch.set(0.8);
-            			canWinch.set(0.8);
-            		}
-        		}
-        		
-        		case 4:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        	}
-    	}
     }
-    
-    class drivetrain implements Runnable
-    {
-    	public void run()
-    	{
-    		while(true)
-    		{
-    			ArcadeDrive();
-    			try {
-					Thread.sleep(20);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-    		}
-    	}
-    }
-    
-}
