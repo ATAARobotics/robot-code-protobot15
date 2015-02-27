@@ -44,6 +44,8 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.io.IOException;
+import org.apache.commons.io.FilenameUtils;
 
 
 
@@ -93,6 +95,7 @@ public class Robot extends IterativeRobot {
     String limitLow;
     String limitHigh;
     String gearPos, gearPos2;
+    int autoMode;
     
     
     double leftThumb2,rightThumb2;
@@ -113,14 +116,12 @@ public class Robot extends IterativeRobot {
     boolean stillPressed7;
     boolean stillPressed8;
     boolean stillPressed9;
-    boolean stillPressed10;
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
-    boolean fullDown;
-    boolean camSetPoint = false;
-    boolean camCancel1;
-	boolean gotoSpot;
+  	boolean gotoSpot, gotoSpot2;
+  	boolean cam1, cam2, camActivate;
+	
 	int stage;
 	int camMode;
 	int leftR, rightR, elevatorR;
@@ -128,8 +129,8 @@ public class Robot extends IterativeRobot {
 	int range2;
 	int elevatorRange;
 	int case1, case2, case3;
-	int i;
-	  boolean testbool = false;	
+
+	boolean testbool = false;	
     public void robotInit() {
     
     canFL = new CANTalon(1);
@@ -145,7 +146,9 @@ public class Robot extends IterativeRobot {
     elevatorManual = false;
     elevatorRange = 15900;
     camMode = 1;
-    i = 0;
+    cam1 = true;
+    cam2 = false;
+    camActivate = false;
  
     ElevatorEncoder = "Elevator Encoder:";
     camPot = "Cam Potentiometer:";
@@ -180,6 +183,7 @@ public class Robot extends IterativeRobot {
 	//encoderR.reset();
     encoderElevator.reset();
 	gotoSpot=false;
+	gotoSpot2 = false;
 
     stage = 0;
     }
@@ -190,7 +194,25 @@ public class Robot extends IterativeRobot {
      
     public void autonomousPeriodic() 
     {
-    	
+    	for(int i = 0; i < 1; i++)
+    	{
+    		
+    		try 
+    		{
+				if(FilenameUtils.directoryContains("C:/Users/Admin/Documents/Auto Mode", "C:/Users/Admin/Documents/Auto Mod/AutoMode1.txt"))
+				{
+					autoMode = 1;
+				}
+			} catch (IOException e) 
+    		{
+				e.printStackTrace();
+			}
+    		
+    		if(autoMode == 1)
+    		{
+    			System.out.println("One!!");
+    		}
+    	}
     }
 
     
@@ -201,10 +223,9 @@ public class Robot extends IterativeRobot {
     	
     	elevatorR = encoderElevator.get();
     	potDegrees = pot1.getVoltage();
+    	elevatorMin = limit2.get();
+    	elevatorMax = limit1.get();
     	
-    	range1 = 240;
-    	range2 = 19000;
-    	    	
     	ArcadeDrive();
     	
     	ArmMotors();
@@ -215,11 +236,12 @@ public class Robot extends IterativeRobot {
     	
     	camFullManual();
     	
+    	camSetpoint();
+    	
     	elevatorOneTote();
     	
     	elevatorLow();
     	
-    	elevatorHigh();
     	
     	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
     	
@@ -244,45 +266,7 @@ public class Robot extends IterativeRobot {
     		gearPos2 = "Low Gear";
     	}
     	
-    	if (joy2.getRawButton(1) == false) {stillPressed5 = false;}
     	
-    	if (joy2.getRawButton(1) && (stillPressed5 == false))
-    	{	
-    		if (camSetPoint == false)
-    		{
-    			camExtend();
-   			}
-    		else if(camSetPoint == true)
-    		{
-    			camRetract();
-    		}
-    	}
-    
-    	
-    	if (joy2.getRawButton(3) == false) {stillPressed9 = false;}
-    	
-    	if (joy2.getRawButton(3) && (stillPressed9 == false) && (elevatorManual == false))
-    		
-    	
-    	
-    	if (joy2.getRawButton(4) == false) {stillPressed10 = false;}
-    	
-    	if (joy2.getRawButton(4) && (stillPressed10 == false)){
-    	 gotoSpot = true;
-    	}
-    	
-    	
-    	if ((gotoSpot==true)&&(limit1.get()==true)){
-    		if (encoderElevator.get() < 10500){
-    			canWinch.set(-0.8);
-    			canWinch2.set(-0.8);
-    			}
-    			
-    		
-    		else {
-    			gotoSpot=false;
-    		}
-    	}
  //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     	
     	//SmartDashboard
@@ -306,103 +290,41 @@ public class Robot extends IterativeRobot {
     }
     
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
+   
     
     public void elevatorLow()
     {
-    /*	
-    	{
-    		//camRetract();
-    		
-    		elevatorMin = limit2.get();
-    		elevatorR = encoderElevator.get();
-    		
-    		if((elevatorMin == true) && (elevatorManual == false))
-        	{
-        		case2 = 1;
-        		
-        	}
-       
-        	switch(case2)
-        	{
-        		case 1:
-        		{
-        			while((elevatorMin == true) && (elevatorManual == false))
-            		{
-        				elevatorMin = limit2.get();
-        			
-            			canWinch.set(0.67);
-            			canWinch.set(0.67);
-            		}
-        		}
-        		
-        		case 2:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        	}
-    	}
-    	*/
-    }
-    
-    public void elevatorHigh()
-    {
-    	if (joy2.getRawButton(2) == false) {stillPressed7 = false;}
+    	if (joy2.getRawButton(3) == false) {stillPressed7 = false;}
     	
-    	if (joy2.getRawButton(2) && (stillPressed7 == false) && (elevatorManual == false))
+    	if (joy2.getRawButton(3) && (stillPressed7 == false) && (elevatorManual == false))
     	{
-    		//camExtend();
-    		
+    		gotoSpot2 = true;
+    	}
+    	
+    	if ((gotoSpot2)&&(elevatorMin))
+    	{
+    
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
     		
-    		elevatorMax = limit1.get();
-    		elevatorR = encoderElevator.get();
+    		if (elevatorR >= 1000)
+    		{
+    			canWinch.set(0.68);
+    			canWinch2.set(0.68);
+    		}
     		
-    		if((elevatorR < 13000) && (elevatorManual == false))
-        	{
-        		case3 = 1;
-       
-        	}
-        	if((elevatorR >= 13000) && (elevatorManual == false))
-        	{
-        		case3 = 2;
-        	}
-        	switch(case3)
-        	{
-        		case 1:
-        		{
-        			while((elevatorR < 13000) && (elevatorManual == false))
-            		{
-        				elevatorMax = limit1.get();
-        				elevatorR = encoderElevator.get();
-        				
-            			canWinch.set(-0.8);
-            			canWinch.set(-0.8);
-            		}
-        		}
-        		
-        		case 2:
-        		{
-        			
-        			
-        			while((elevatorMax == true) && (elevatorManual == false))
-        			{
-        				elevatorMax = limit1.get();
-        				
-        				canWinch.set(-0.3);
-        				canWinch2.set(-0.3);
-        			}
-        		}
-        		
-        		case 3:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        	}
+    		else if((elevatorR < 1000) && (elevatorMin))
+    		{
+    			canWinch.set(0.3);
+    			canWinch2.set(0.3);
+    		}
+    	
+    		else 
+    		{
+    			canWinch.set(0);
+    			canWinch2.set(0);
+    			gotoSpot2=false;
+    		}
     	}
     }
     
@@ -413,10 +335,29 @@ public class Robot extends IterativeRobot {
     	
     	if (joy2.getRawButton(4) && (stillPressed6 == false))
     	{
+    		gotoSpot = true;
+    		cam1 = true;
+    		cam2 = false;
+    		camActivate = true;
+    	}
+    	
+    	if ((gotoSpot)&&(elevatorMin))
+    	{
+    		leftArm.set(DoubleSolenoid.Value.kForward);
+			rightArm.set(DoubleSolenoid.Value.kForward);
     		
-    		
-    		//camExtend();
-    		
+    		if (elevatorR < 10000)
+    		{
+    			canWinch.set(-0.9);
+    			canWinch2.set(-0.9);
+    		}
+    	
+    		else 
+    		{
+    			canWinch.set(0);
+    			canWinch2.set(0);
+    			gotoSpot=false;
+    		}
     	}
     }
     
@@ -516,63 +457,60 @@ public class Robot extends IterativeRobot {
     		}	
     }
        
-    public void camExtend()
+    public void camSetpoint()
     {
-    	potDegrees = pot1.getVoltage();
-		
-    	if(potDegrees < 4.622)
-        {
-        	case2 = 1;
-        		
-        }
-        	
-        switch(case2)
-        {
-        	case 1:
-        	{
-        		while(potDegrees < 4.622)
-           		{
-        			potDegrees = pot1.getVoltage();
-        			
-           			talKicker.set(1);
-           		}
-        	}
-        		
-        	case 2:
-        	{
-        		talKicker.set(0);
-        		break;
-        	}
+    	if (joy2.getRawButton(1) == false) {stillPressed5 = false;}
+    	
+    	if (joy2.getRawButton(1) && (stillPressed5 == false))
+    	{	
+    		if ((cam1) && (!cam2))
+			{
+    			cam1 = false;
+    			cam2 = true;
+    			camActivate = true;
+    			stillPressed5=true;
+			}
+    		else if ((!cam1) && (cam2))
+    		{
+    			cam1 = true;
+    			cam2 = false;
+    			camActivate = true;
+    			stillPressed5=true;
+    		}
     	}
-    }
-    
-    public void camRetract()
-    {
-    	potDegrees = pot1.getVoltage();
-    		
-    	if(potDegrees < 4.622)
-        {
-        	case2 = 1;
-        		
-        }
-        	
-        switch(case2)
-        {
-        	case 1:
-        	{
-        		while(potDegrees < 4.622)
-           		{
-        			potDegrees = pot1.getVoltage();
-        			
-           			talKicker.set(1);
-           		}
-        	}
-        		
-        	case 2:
-        	{
-        		talKicker.set(0);
-        		break;
-        	}
+    	
+    	if (camActivate)
+    	{
+    	
+    		if ((cam1) && (!cam2))
+    		{
+    			if(potDegrees < 4.622)
+    			{
+    				talKicker.set(1);
+    			}
+    			
+    			else
+    			{
+    				talKicker.set(0);
+    				camActivate = false;
+    			}
+    			
+    		}
+    	
+    		else if ((!cam1) && (cam2)) 
+    		{
+    			if(potDegrees > 0.188)
+    			{
+    				talKicker.set(-1);
+    			}
+    			
+    			else
+    			{
+    				talKicker.set(0);
+    				camActivate = false;
+    			}
+    			
+    		}
     	}
     }
         
@@ -724,9 +662,6 @@ public class Robot extends IterativeRobot {
     {
     	
     	//Elevator Motors [Y = Up B = Down]
-    	
-    	elevatorMin = limit2.get();
-    	elevatorMax = limit1.get();
     
      		if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == true))
         	{
