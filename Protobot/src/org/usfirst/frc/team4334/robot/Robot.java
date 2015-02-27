@@ -299,6 +299,9 @@ public class Robot extends IterativeRobot {
     	if (joy2.getRawButton(3) && (stillPressed7 == false) && (elevatorManual == false))
     	{
     		gotoSpot2 = true;
+    		cam1 = false;
+    		cam2 = true;
+    		camActivate = true;
     	}
     	
     	if ((gotoSpot2)&&(elevatorMin))
@@ -341,7 +344,7 @@ public class Robot extends IterativeRobot {
     		camActivate = true;
     	}
     	
-    	if ((gotoSpot)&&(elevatorMin))
+    	if (gotoSpot)
     	{
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
@@ -663,7 +666,7 @@ public class Robot extends IterativeRobot {
     	
     	//Elevator Motors [Y = Up B = Down]
     
-     		if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == true))
+     		if((joy2.getRawAxis(2) > 0.05) && (joy2.getRawAxis(3) > 0.05))
         	{
      			elevatorManual = false;
      			
@@ -671,41 +674,29 @@ public class Robot extends IterativeRobot {
         		canWinch2.set(0);
         	}
         	
-        	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == false))
+        	if((joy2.getRawAxis(2) < 0.03) && (joy2.getRawAxis(3) < 0.03))
         	{
-        		elevatorManual = false;
-        		
         		canWinch.set(0);
         		canWinch2.set(0);
         	}
         	
-        	if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == false) && (elevatorMin == true))
+        	if((joy2.getRawAxis(2) > 0.03) && (joy2.getRawAxis(3) < 0.03) && (elevatorMin))
         	{
 
         		elevatorManual = true;
         		gotoSpot=false;
-        		canWinch.set(0.5);
-        		canWinch2.set(0.5);
+        		canWinch.set(joy2.getRawAxis(2));
+        		canWinch2.set(joy2.getRawAxis(2));
         	}
         	
-        	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == true) && (elevatorMax == true))
+        	if((joy2.getRawAxis(2) < 0.03) && (joy2.getRawAxis(3) > 0.05) && (elevatorMax == true))
         	{
 
         		elevatorManual = true;
         		gotoSpot=false;
-        		if(elevatorR <= 12000)
-        		{
-        			canWinch.set(-0.5);
-            		canWinch2.set(-0.5);
-            		
-        		}	
-        		
-        		if(elevatorR > 12000)
-        		{
-        			canWinch.set(-0.3);
-        			canWinch2.set(-0.3);
-        		}
-        }
+        		canWinch.set(-(joy2.getRawAxis(3)));
+            	canWinch2.set(-(joy2.getRawAxis(3)));
+        	}
     	
     	if(joy.getRawButton(7) == true)
     	{
