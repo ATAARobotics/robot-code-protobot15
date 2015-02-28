@@ -33,6 +33,9 @@
 //THIS IS THE PRACTICE BOT CODE!!
 package org.usfirst.frc.team4334.robot;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
@@ -131,7 +134,7 @@ public class Robot extends IterativeRobot {
 	int case1, case2, case3;
 	
     public void robotInit() {
-    
+    new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20);
     canFL = new CANTalon(1);
 	canBL = new CANTalon(2);
 	canFR = new CANTalon(5);
@@ -711,6 +714,7 @@ public class Robot extends IterativeRobot {
     }
        
     public void Elevator()
+    	
     {
     	
     	//Elevator Motors [Y = Up B = Down]
