@@ -44,6 +44,9 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.io.IOException;
+import org.apache.commons.io.FilenameUtils;
+
 
 
 /**
@@ -59,7 +62,7 @@ public class Robot extends IterativeRobot {
     
     //This function is run when the robot is first started up and should be
     //used for any initialization code.
-     	
+     
     
 	Joystick joy;
 	Joystick joy2;
@@ -74,8 +77,8 @@ public class Robot extends IterativeRobot {
     Talon talArmLeft;
     Talon talArmRight;
     
-    Encoder encoderL;
-	Encoder encoderR;
+    //Encoder encoderL;
+	//Encoder encoderR;
 	Encoder encoderElevator;
 	
 	AnalogInput pot1;
@@ -92,7 +95,7 @@ public class Robot extends IterativeRobot {
     String limitLow;
     String limitHigh;
     String gearPos, gearPos2;
-    String autoMode;
+    int autoMode;
     
     
     double leftThumb2,rightThumb2;
@@ -116,19 +119,18 @@ public class Robot extends IterativeRobot {
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
-    boolean fullDown;
-    boolean camSetPoint = false;
-    boolean camCancel1;
-	boolean gotoSpot, gotoSpot2, gotoSpot3;
-	boolean gotoCam1 = true;
-	boolean gotoCam2 = false;
-	boolean camActivate = false;
+  	boolean gotoSpot, gotoSpot2;
+  	boolean cam1, cam2, camActivate;
 	
+	int stage;
 	int camMode;
 	int leftR, rightR, elevatorR;
+	int range1;
+	int range2;
 	int elevatorRange;
 	int case1, case2, case3;
-	
+
+	boolean testbool = false;	
     public void robotInit() {
     
     canFL = new CANTalon(1);
@@ -144,7 +146,10 @@ public class Robot extends IterativeRobot {
     elevatorManual = false;
     elevatorRange = 15900;
     camMode = 1;
-    
+    cam1 = true;
+    cam2 = false;
+    camActivate = false;
+ 
     ElevatorEncoder = "Elevator Encoder:";
     camPot = "Cam Potentiometer:";
     limitLow = "Bottom Limit Switch:";
@@ -172,61 +177,42 @@ public class Robot extends IterativeRobot {
     flipper.set(DoubleSolenoid.Value.kForward);
     
     encoderElevator = new Encoder(0, 1, true, EncodingType.k4X);
-    encoderR = new Encoder(4, 5, true, EncodingType.k4X);
-	encoderL = new Encoder(2, 3, true, EncodingType.k4X);
-	encoderL.reset();
-	encoderR.reset();
+    //encoderR = new Encoder(1, 2, true, EncodingType.k4X);
+	//encoderL = new Encoder(3, 4, true, EncodingType.k4X);
+	//encoderL.reset();
+	//encoderR.reset();
     encoderElevator.reset();
+	gotoSpot=false;
+	gotoSpot2 = false;
+
+    stage = 0;
     }
 
     
     
      //This function is called periodically [20 ms] during autonomous
      
-    public void autonomousPeriodic()
+    public void autonomousPeriodic() 
     {
     	for(int i = 0; i < 1; i++)
-    	{ 	
-        	
-    		if(autoMode == "1")
-    		{
-    			
-    		}
+    	{
     		
-    		if(autoMode == "2")
+    		try 
     		{
-    			
-    		}
+				if(FilenameUtils.directoryContains("C:/Users/Admin/Documents/Auto Mode", "C:/Users/Admin/Documents/Auto Mod/AutoMode1.txt"))
+				{
+					autoMode = 1;
+				}
+			} catch (IOException e) 
+    		{
+				e.printStackTrace();
+			}
     		
-    		if(autoMode == "3")
+    		if(autoMode == 1)
     		{
-    			
-    		}
-    		
-    		if(autoMode == "4")
-    		{
-    			
-    		}
-    		
-    		if(autoMode == "5")
-    		{
-    			
-    		}
-    		
-    		if(autoMode == "6")
-    		{
-    			
-    		}
-    		
-    		if(autoMode == "7")
-    		{
-    			
+    			System.out.println("One!!");
     		}
     	}
-    	
-    	leftR = encoderR.get();
-    	rightR = encoderL.get();
-    	elevatorR = encoderElevator.get();
     }
 
     
@@ -246,7 +232,7 @@ public class Robot extends IterativeRobot {
     	
     	Elevator();
     		
-    	buttonToggles();
+    	pneumatics();
     	
     	camFullManual();
     	
@@ -256,9 +242,20 @@ public class Robot extends IterativeRobot {
     	
     	elevatorLow();
     	
-    	//elevatorHigh();
     	
+    	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
     	
+    	if (joy2.getRawButton(6) && (stillPressed8 == false))
+    	{
+    		if (camMode == 1)
+    			{
+    				camMode = 2;
+    			}
+    		else if(camMode == 2)
+    		{
+    			camMode = 1;
+    		}
+    	}
     	
     	if(gearShift.get() == DoubleSolenoid.Value.kForward)
     	{
@@ -268,7 +265,6 @@ public class Robot extends IterativeRobot {
     	{
     		gearPos2 = "Low Gear";
     	}
-    	
     	
     	
  //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -284,87 +280,52 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean(limitLow, elevatorMin);
     
     	SmartDashboard.putString(gearPos, gearPos2);
-    	
-    	SmartDashboard.putBoolean("CamActivate", camActivate);
    }
 
      //This function is called periodically during test mode
      
     public void testPeriodic() 
     {
-    	
+    
     }
     
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
+   
     
     public void elevatorLow()
     {
     	if (joy2.getRawButton(3) == false) {stillPressed7 = false;}
     	
-    	if (joy2.getRawButton(3) && (stillPressed7 == false))
+    	if (joy2.getRawButton(3) && (stillPressed7 == false) && (elevatorManual == false))
     	{
     		gotoSpot2 = true;
-    		gotoCam1 = false;
-			gotoCam2 = true;
+    		cam1 = false;
+    		cam2 = true;
     		camActivate = true;
-    		stillPressed7 = true;
     	}
     	
-    	if (gotoSpot2)
+    	if ((gotoSpot2)&&(elevatorMin))
     	{
-
+    
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
     		
-    		if ((elevatorMin) && (elevatorR >= 1500))
+    		if (elevatorR >= 1000)
     		{
     			canWinch.set(0.68);
     			canWinch2.set(0.68);
     		}
     		
-    		else if((elevatorMin) && (elevatorR < 1500))
+    		else if((elevatorR < 1000) && (elevatorMin))
     		{
     			canWinch.set(0.3);
     			canWinch2.set(0.3);
     		}
-    		
+    	
     		else 
     		{
-    			gotoSpot2=false;
-   			}
-    	}
-    }
-    
-    public void elevatorHigh()
-    {
-    	if (joy2.getRawButton(2) == false) {stillPressed9 = false;}
-    	
-    	if (joy2.getRawButton(2) && (stillPressed9 == false))
-    	{
-    		gotoSpot3 = true;
-    		gotoCam1 = true;
-			gotoCam2 = false;
-    		camActivate = true;	
-    		stillPressed9 = true;
-    	}
-    	
-    	if (gotoSpot3)
-    	{
-
-    		leftArm.set(DoubleSolenoid.Value.kForward);
-			rightArm.set(DoubleSolenoid.Value.kForward);
-    		
-    		if ((elevatorMax) && (elevatorR <= 13000))
-    		{
-    			canWinch.set(-0.8);
-    			canWinch2.set(0.8);
-    		}
-    		else if((elevatorMax) && (elevatorR > 13000))
-    		{
-    			canWinch.set(-0.33);
-    			canWinch2.set(0.33);
-    		}
-    		else {
+    			canWinch.set(0);
+    			canWinch2.set(0);
     			gotoSpot2=false;
     		}
     	}
@@ -372,33 +333,32 @@ public class Robot extends IterativeRobot {
     
     public void elevatorOneTote()
     {
+
     	if (joy2.getRawButton(4) == false) {stillPressed6 = false;}
     	
     	if (joy2.getRawButton(4) && (stillPressed6 == false))
     	{
     		gotoSpot = true;
-    		gotoCam1 = true;
-			gotoCam2 = false;
+    		cam1 = true;
+    		cam2 = false;
     		camActivate = true;
-    		stillPressed6 = true;
-    		
     	}
-    	
-    	
-    	
     	
     	if (gotoSpot)
     	{
-
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
     		
-    		if (elevatorR < 10500)
+    		if (elevatorR < 10000)
     		{
     			canWinch.set(-0.9);
     			canWinch2.set(-0.9);
     		}
-    		else {
+    	
+    		else 
+    		{
+    			canWinch.set(0);
+    			canWinch2.set(0);
     			gotoSpot=false;
     		}
     	}
@@ -421,45 +381,9 @@ public class Robot extends IterativeRobot {
     	}
     }
     
-    public void buttonToggles()
+    public void pneumatics()
     
     {
-    	//Cam Setpoint Toggle
-    	
-    	if (joy2.getRawButton(1) == false) {stillPressed5 = false;}
-    	
-    	if (joy2.getRawButton(1) && (stillPressed5 == false))
-    	{
-    		camActivate = true;
-    		
-    		if ((gotoCam1) && (!gotoCam2))
-			{
-				gotoCam1 = false;
-				gotoCam2 = true;
-			}
-    		else if ((!gotoCam1) && (gotoCam2))
-    		{
-    			gotoCam1 = true;
-    			gotoCam2 = false;
-    		}
-    	}
-    	
-    	//Cam Mode Switching [RB]
-    	
-    	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
-    	
-    	if (joy2.getRawButton(6) && (stillPressed8 == false))
-    	{
-    		if (camMode == 1)
-    			{
-    				camMode = 2;
-    			}
-    		else if(camMode == 2)
-    		{
-    			camMode = 1;
-    		}
-    	}
-    	
     	//Gear Shifting [Right Thumbstick Button]
     	
     	if (joy.getRawButton(2) == false) {stillPressed = false;}
@@ -538,41 +462,61 @@ public class Robot extends IterativeRobot {
        
     public void camSetpoint()
     {
-    	if ((camActivate) && (camMode == 1))
+    	if (joy2.getRawButton(1) == false) {stillPressed5 = false;}
+    	
+    	if (joy2.getRawButton(1) && (stillPressed5 == false))
+    	{	
+    		if ((cam1) && (!cam2))
+			{
+    			cam1 = false;
+    			cam2 = true;
+    			camActivate = true;
+    			stillPressed5=true;
+			}
+    		else if ((!cam1) && (cam2))
+    		{
+    			cam1 = true;
+    			cam2 = false;
+    			camActivate = true;
+    			stillPressed5=true;
+    		}
+    	}
+    	
+    	if (camActivate)
     	{
-    		if((gotoCam1) && (!gotoCam2))
+    	
+    		if ((cam1) && (!cam2))
     		{
-
-        		if (potDegrees < 4.622)
-        		{
-        			talKicker.set(-1);
-        		}
-        		
-        		else 
-        		{
-        			talKicker.set(0);
-        			camActivate=false;
-        		}
+    			if(potDegrees < 4.622)
+    			{
+    				talKicker.set(1);
+    			}
+    			
+    			else
+    			{
+    				talKicker.set(0);
+    				camActivate = false;
+    			}
+    			
     		}
-    		
-    		if((!gotoCam1) && (gotoCam2))
+    	
+    		else if ((!cam1) && (cam2)) 
     		{
-
-    			if (potDegrees > 0.188)
-        		{
-        			talKicker.set(1);
-        		}
-        		
-        		else 
-        		{
-        			talKicker.set(0);
-        			camActivate=false;
-        		}
+    			if(potDegrees > 0.188)
+    			{
+    				talKicker.set(-1);
+    			}
+    			
+    			else
+    			{
+    				talKicker.set(0);
+    				camActivate = false;
+    			}
+    			
     		}
-    		
     	}
     }
-    
+        
     public void ArcadeDrive()
     {
     	q = (joy.getRawAxis(4));
@@ -633,22 +577,22 @@ public class Robot extends IterativeRobot {
     	
     	if((leftThumb < -deadZ) && (rightThumb > deadZ))
     	{
-    		canFL.set(-(leftThumb + (rightThumb * turnRad)));
-    		canBL.set(-(leftThumb + (rightThumb * turnRad)));
+    		canFL.set(-leftThumb);
+    		canBL.set(-leftThumb);
     		
-    		canBR.set(leftThumb);
-    		canFR.set(leftThumb);
+    		canBR.set(leftThumb + (rightThumb * turnRad));
+    		canFR.set(leftThumb + (rightThumb * turnRad));
     	}
     	
     	//If left thumbstick is negative and right thumbstick is negative
     	
     	if((leftThumb < -deadZ) && (rightThumb < -deadZ))
     	{
-    		canFL.set(-leftThumb);
-    		canBL.set(-leftThumb);
+    		canFL.set(-(leftThumb - (rightThumb * turnRad)));
+    		canBL.set(-(leftThumb - (rightThumb * turnRad)));
     		
-    		canBR.set(leftThumb - (rightThumb * turnRad));
-    		canFR.set(leftThumb - (rightThumb * turnRad));
+    		canBR.set(leftThumb);
+    		canFR.set(leftThumb);
     	}
 
     }
@@ -721,54 +665,43 @@ public class Robot extends IterativeRobot {
     {
     	
     	//Elevator Motors [Y = Up B = Down]
-    	
-     		if((joy2.getRawAxis(3) > 0.09) && (joy2.getRawAxis(2) > 0.09))
+    
+     		if((joy2.getRawAxis(2) > 0.05) && (joy2.getRawAxis(3) > 0.05))
         	{
+     			elevatorManual = false;
+     			
         		canWinch.set(0);
         		canWinch2.set(0);
         	}
-     		
-     		if((joy2.getRawAxis(3) < 0.09) && (joy2.getRawAxis(2) < 0.09))
+        	
+        	if((joy2.getRawAxis(2) < 0.03) && (joy2.getRawAxis(3) < 0.03))
         	{
         		canWinch.set(0);
         		canWinch2.set(0);
         	}
         	
-        	if((joy2.getRawAxis(3) > 0.09) && (joy2.getRawAxis(2) < 0.09) && (elevatorMax == true))
-        	{
-
-        		elevatorManual = true;
-        		gotoSpot=false;
-        		canWinch.set(-(joy2.getRawAxis(3)));
-        		canWinch2.set(-(joy2.getRawAxis(3)));
-        	}
-        	
-        	if((joy2.getRawAxis(3) < 0.1) && (joy2.getRawAxis(2) > 0.1) && (elevatorMin == true))
+        	if((joy2.getRawAxis(2) > 0.03) && (joy2.getRawAxis(3) < 0.03) && (elevatorMin))
         	{
 
         		elevatorManual = true;
         		gotoSpot=false;
         		canWinch.set(joy2.getRawAxis(2));
         		canWinch2.set(joy2.getRawAxis(2));
-        }
+        	}
+        	
+        	if((joy2.getRawAxis(2) < 0.03) && (joy2.getRawAxis(3) > 0.05) && (elevatorMax == true))
+        	{
+
+        		elevatorManual = true;
+        		gotoSpot=false;
+        		canWinch.set(-(joy2.getRawAxis(3)));
+            	canWinch2.set(-(joy2.getRawAxis(3)));
+        	}
     	
     	if(joy.getRawButton(7) == true)
     	{
     		encoderElevator.reset();
     	}
     }
-
-    public void Forward(int distance, double power)
-    {
-    	while((leftR < distance) && (rightR < distance))
-    	{
-    		canFL.set(-power);
-    		canBL.set(-power);
-    		
-    		canBR.set(power);
-    		canFR.set(power);
-    	}
-    }
-    
-    
+ 
     }
