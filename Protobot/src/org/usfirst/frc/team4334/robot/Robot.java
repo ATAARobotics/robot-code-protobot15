@@ -122,6 +122,7 @@ public class Robot extends IterativeRobot {
 	boolean gotoSpot, gotoSpot2, gotoSpot3;
 	boolean gotoCam1 = true;
 	boolean gotoCam2 = false;
+	boolean camChange = false;
 	boolean camActivate = false;
 	
 	int camMode;
@@ -275,17 +276,14 @@ public class Robot extends IterativeRobot {
     	
     	//SmartDashboard
     
-    	SmartDashboard.putNumber(ElevatorEncoder, elevatorR);
-    
-    	SmartDashboard.putNumber(camPot, potDegrees);
-    
-    	SmartDashboard.putBoolean(limitHigh, elevatorMax);
-    
-    	SmartDashboard.putBoolean(limitLow, elevatorMin);
-    
-    	SmartDashboard.putString(gearPos, gearPos2);
-    	
+    	SmartDashboard.putNumber(ElevatorEncoder, elevatorR);   
+    	SmartDashboard.putNumber(camPot, potDegrees); 
+    	SmartDashboard.putBoolean(limitHigh, elevatorMax);   
+    	SmartDashboard.putBoolean(limitLow, elevatorMin);   
+    	SmartDashboard.putString(gearPos, gearPos2);	
     	SmartDashboard.putBoolean("CamActivate", camActivate);
+    	SmartDashboard.putBoolean("gotoCam1", gotoCam1);
+    	SmartDashboard.putBoolean("camChange", camChange);
    }
 
      //This function is called periodically during test mode
@@ -384,9 +382,6 @@ public class Robot extends IterativeRobot {
     		
     	}
     	
-    	
-    	
-    	
     	if (gotoSpot)
     	{
 
@@ -430,20 +425,18 @@ public class Robot extends IterativeRobot {
     	
     	if (joy2.getRawButton(1) && (stillPressed5 == false))
     	{
-    		camActivate = true;
-    		
-    		if ((gotoCam1) && (!gotoCam2))
+    		if (gotoCam1)
 			{
 				gotoCam1 = false;
-				gotoCam2 = true;
 			}
-    		else if ((!gotoCam1) && (gotoCam2))
+    		else if (!gotoCam1)
     		{
     			gotoCam1 = true;
-    			gotoCam2 = false;
     		}
+    		
+    		camActivate = true;
     	}
-    	
+    
     	//Cam Mode Switching [RB]
     	
     	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
@@ -540,10 +533,10 @@ public class Robot extends IterativeRobot {
     {
     	if ((camActivate) && (camMode == 1))
     	{
-    		if((gotoCam1) && (!gotoCam2))
+    		if(gotoCam1)
     		{
 
-        		if (potDegrees < 4.622)
+        		if (potDegrees < 4.7)
         		{
         			talKicker.set(-1);
         		}
@@ -555,7 +548,7 @@ public class Robot extends IterativeRobot {
         		}
     		}
     		
-    		if((!gotoCam1) && (gotoCam2))
+    		if(!gotoCam1)
     		{
 
     			if (potDegrees > 0.188)
@@ -716,7 +709,7 @@ public class Robot extends IterativeRobot {
     		talArmRight.set(-(leftThumb2 - (rightThumb2 * 0.9))); 	
     	}
     }
-        
+       
     public void Elevator()
     {
     	
@@ -758,9 +751,9 @@ public class Robot extends IterativeRobot {
     	}
     }
 
-    public void Forward(int distance, double power)
+    public void moveForward(int distance, double power)
     {
-    	while((leftR < distance) && (rightR < distance))
+    	while((leftR > -distance) && (rightR < distance))
     	{
     		canFL.set(-power);
     		canBL.set(-power);
@@ -768,7 +761,31 @@ public class Robot extends IterativeRobot {
     		canBR.set(power);
     		canFR.set(power);
     	}
+    	encoderR.reset();
+    	encoderL.reset();
     }
     
+    public void moveBackward(int distance, double power)
+    {
+    	while((leftR < -distance) && (rightR > distance))
+    	{
+    		canFL.set(power);
+    		canBL.set(power);
+    		
+    		canBR.set(-power);
+    		canFR.set(-power);
+    	}
+    	encoderR.reset();
+    	encoderL.reset();
+    }
+    
+    
+    //----------------------------------------------------------------------------------------------------------------------------------\\
+    
+    
+    public void moveToZone()
+    {
+    	moveBackward(2000, 1);
+    }
     
     }
