@@ -181,20 +181,25 @@ public class Robot extends IterativeRobot {
 	encoderL.reset();
 	encoderR.reset();
     encoderElevator.reset();
+    autoMode = "1";
     }
 
     
     
      //This function is called periodically [20 ms] during autonomous
-     
+    void getEncoders(){
+    	leftR = encoderR.get();
+    	rightR = encoderL.get();
+    	elevatorR = encoderElevator.get();
+    }
     public void autonomousPeriodic()
     {
     	for(int i = 0; i < 1; i++)
     	{ 	
-        	
+    		new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
     		if(autoMode == "1")
     		{
-    			
+    		moveToZone();	
     		}
     		
     		if(autoMode == "2")
@@ -228,9 +233,6 @@ public class Robot extends IterativeRobot {
     		}
     	}
     	
-    	leftR = encoderR.get();
-    	rightR = encoderL.get();
-    	elevatorR = encoderElevator.get();
     }
 
     
@@ -539,7 +541,7 @@ public class Robot extends IterativeRobot {
     		if(gotoCam1)
     		{
 
-        		if (potDegrees < 4.7)
+        		if (potDegrees < 3)
         		{
         			talKicker.set(-1);
         		}
@@ -554,7 +556,7 @@ public class Robot extends IterativeRobot {
     		if(!gotoCam1)
     		{
 
-    			if (potDegrees > 0.188)
+    			if (potDegrees > 2.5)
         		{
         			talKicker.set(1);
         		}
@@ -758,13 +760,13 @@ public class Robot extends IterativeRobot {
     public void moveForward(int distance, double power)
     {
     	while((leftR > -distance) && (rightR < distance))
-    	{
+    	
     		canFL.set(-power);
     		canBL.set(-power);
     		
     		canBR.set(power);
     		canFR.set(power);
-    	}
+    	
     	encoderR.reset();
     	encoderL.reset();
     }
