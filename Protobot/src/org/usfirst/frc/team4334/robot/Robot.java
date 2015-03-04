@@ -36,6 +36,9 @@ package org.usfirst.frc.team4334.robot;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.ni.vision.NIVision;
+import com.ni.vision.NIVision.Image;
+
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
@@ -47,6 +50,8 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.vision.USBCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 
 
 /**
@@ -63,7 +68,8 @@ public class Robot extends IterativeRobot {
     //This function is run when the robot is first started up and should be
     //used for any initialization code.
      	
-    
+	CameraServer cam = CameraServer.getInstance();
+	
 	Joystick joy;
 	Joystick joy2;
 	
@@ -132,8 +138,12 @@ public class Robot extends IterativeRobot {
 	int leftR, rightR, elevatorR;
 	int elevatorRange;
 	int case1, case2, case3;
+	Image frame;
+	int session = NIVision.IMAQdxOpenCamera("cam0", NIVision.IMAQdxCameraControlMode.CameraControlModeController);
 	
     public void robotInit() {
+    
+    cam.startAutomaticCapture("cam0");
     new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20);
     canFL = new CANTalon(1);
 	canBL = new CANTalon(2);
@@ -183,17 +193,17 @@ public class Robot extends IterativeRobot {
     encoderElevator.reset();
     autoMode = "1";
     }
-
+    
     
     
      //This function is called periodically [20 ms] during autonomous
-    void getEncoders(){
-    	leftR = encoderR.get();
-    	rightR = encoderL.get();
-    	elevatorR = encoderElevator.get();
-    }
+    
     public void autonomousPeriodic()
     {
+    	NIVision.IMAQdxGrab(session, frame, 1);
+		CameraServer.getInstance().setImage(frame);
+    	getEncoders();
+    	
     	for(int i = 0; i < 1; i++)
     	{ 	
     		new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
@@ -299,7 +309,7 @@ public class Robot extends IterativeRobot {
     }
     
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
-    
+    //TELEOP METHODS
     public void elevatorLow()
     {
     	if (joy2.getRawButton(3) == false) {stillPressed7 = false;}
@@ -757,8 +767,14 @@ public class Robot extends IterativeRobot {
     	}
     }
 
+    
+    
+    
+    //----------------------------------------------------------------------------------------------------------------------------------\\
+    //AUTO METHODS
     public void moveForward(int distance, double power)
-    {
+    {//drive forwards for "distance" rotations at "power" speed
+    	
     	while((leftR > -distance) && (rightR < distance))
     	
     		canFL.set(-power);
@@ -770,9 +786,9 @@ public class Robot extends IterativeRobot {
     	encoderR.reset();
     	encoderL.reset();
     }
-    
     public void moveBackward(int distance, double power)
-    {
+    {//drive backwards for "distance" rotations at "power" speed
+    	
     	while((leftR < -distance) && (rightR > distance))
     	{
     		canFL.set(power);
@@ -785,13 +801,29 @@ public class Robot extends IterativeRobot {
     	encoderL.reset();
     }
     
-    
-    //----------------------------------------------------------------------------------------------------------------------------------\\
-    
-    
     public void moveToZone()
-    {
+    {//move backwards for 2000 distance at full speed
+    	
     	moveBackward(2000, 1);
     }
     
+    void getEncoders(){
+    	//get encoder values
+    	
+    	leftR = encoderR.get();
+    	rightR = encoderL.get();
+    	elevatorR = encoderElevator.get();
     }
+
+    void rotate(int ammount, double speed){
+    	// Rotate for "ammount" length at "speed" power
+    	//turning direction is directly influenced whether or not ammount is positive or negative
+    	while((leftR < -ammount) && (rightR > ammount))
+    	canFL.set(-speed);
+		canBL.set(-speed);
+		
+		canBR.set(-speed);
+		canFR.set(-speed);
+    }
+}
+
