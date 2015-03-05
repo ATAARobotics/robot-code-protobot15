@@ -36,9 +36,6 @@ package org.usfirst.frc.team4334.robot;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.ni.vision.NIVision;
-import com.ni.vision.NIVision.Image;
-
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
 import edu.wpi.first.wpilibj.Compressor;
@@ -52,10 +49,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.vision.USBCamera;
-<<<<<<< HEAD
-=======
-import edu.wpi.first.wpilibj.CameraServer;
->>>>>>> origin/master
 
 
 /**
@@ -72,8 +65,7 @@ public class Robot extends IterativeRobot {
     //This function is run when the robot is first started up and should be
     //used for any initialization code.
      	
-	CameraServer cam = CameraServer.getInstance();
-	
+    
 	Joystick joy;
 	Joystick joy2;
 	
@@ -139,18 +131,11 @@ public class Robot extends IterativeRobot {
 	int leftR, rightR, elevatorR;
 	int elevatorRange;
 	int case1, case2, case3;
-<<<<<<< HEAD
 	int autoMode;
-=======
-	Image frame;
-	int session = NIVision.IMAQdxOpenCamera("cam0", NIVision.IMAQdxCameraControlMode.CameraControlModeController);
->>>>>>> origin/master
 	
     public void robotInit() {
+    //new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20);
     
-    cam.startAutomaticCapture("cam0");
-    new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20);
-    //new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
     canFL = new CANTalon(1);
 	canBL = new CANTalon(2);
 	canFR = new CANTalon(5);
@@ -196,30 +181,19 @@ public class Robot extends IterativeRobot {
 	encoderL.reset();
 	encoderR.reset();
     encoderElevator.reset();
-    autoMode = 2;
+    autoMode = 1;
     goOnce = true;
     }
-    
+
     
     
      //This function is called periodically [20 ms] during autonomous
     
     public void autonomousPeriodic()
     {
-<<<<<<< HEAD
     	if(goOnce)
     	{
     		if(autoMode == 0)
-=======
-    	NIVision.IMAQdxGrab(session, frame, 1);
-		CameraServer.getInstance().setImage(frame);
-    	getEncoders();
-    	
-    	for(int i = 0; i < 1; i++)
-    	{ 	
-    		new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
-    		if(autoMode == "1")
->>>>>>> origin/master
     		{
     			goOnce = false;
     			Testing();
@@ -229,12 +203,12 @@ public class Robot extends IterativeRobot {
     		{
     			goOnce = false;
     			moveToZone();
-    			System.out.println("thingz");
     		}
     		
     		if(autoMode == 2)
     		{
     			goOnce = false;
+    			new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
     			grabOne();
     		}
     		
@@ -271,6 +245,8 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() 
     {
     	
+		getEncoders();
+		
     	potDegrees = pot1.getVoltage();
     	elevatorMin = limit2.get();
     	elevatorMax = limit1.get();
@@ -326,13 +302,9 @@ public class Robot extends IterativeRobot {
     }
     
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
-<<<<<<< HEAD
     
     //Teleop methods
     
-=======
-    //TELEOP METHODS
->>>>>>> origin/master
     public void elevatorLow()
     {
     	if (joy2.getRawButton(3) == false) {stillPressed7 = false;}
@@ -790,7 +762,6 @@ public class Robot extends IterativeRobot {
     	}
     }
 
-<<<<<<< HEAD
 //----------------------------------------------------------------------------------------------------------------------------------\\
    
     //Auto Mode methods  
@@ -810,17 +781,6 @@ public class Robot extends IterativeRobot {
     	while((leftR < distance) && (rightR < distance))
     	{
     		getEncoders();
-=======
-    
-    
-    
-    //----------------------------------------------------------------------------------------------------------------------------------\\
-    //AUTO METHODS
-    public void moveForward(int distance, double power)
-    {//drive forwards for "distance" rotations at "power" speed
-    	
-    	while((leftR > -distance) && (rightR < distance))
->>>>>>> origin/master
     	
     		canFL.set(-power);
     		canBL.set(-power);
@@ -829,10 +789,15 @@ public class Robot extends IterativeRobot {
     		canFR.set(power);
     	}
     	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
     	encoderR.reset();
     	encoderL.reset();
     }
-<<<<<<< HEAD
     
     public void armsClose()
     {
@@ -848,13 +813,7 @@ public class Robot extends IterativeRobot {
     
     public void leftTurn(double power)
     {
-    	while(leftR < 770)
-=======
-    public void moveBackward(int distance, double power)
-    {//drive backwards for "distance" rotations at "power" speed
-    	
-    	while((leftR < -distance) && (rightR > distance))
->>>>>>> origin/master
+    	while(rightR < 770)
     	{
     		getEncoders();
     		
@@ -864,11 +823,17 @@ public class Robot extends IterativeRobot {
     		canBR.set(-power);
     		canFR.set(-power);
     	}
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
     	encoderR.reset();
     	encoderL.reset();
     }
     
-<<<<<<< HEAD
     public void rightTurn(double power)
     {
     	while(rightR < 770)
@@ -882,18 +847,14 @@ public class Robot extends IterativeRobot {
     		canFR.set(power);
     	}
     	
-    	
-    	encoderR.reset();
-    	encoderL.reset();
-    }
-    
-    public void stop()
-    {
     	canFL.set(0);
 		canBL.set(0);
 		
 		canBR.set(0);
 		canFR.set(0);
+    	
+    	encoderR.reset();
+    	encoderL.reset();
     }
     
 //----------------------------------------------------------------------------------------------------------------------------------\\
@@ -908,7 +869,6 @@ public class Robot extends IterativeRobot {
     public void moveToZone()
     {
     	drive(1000, -0.5);
-    	stop();
     }
     
     public void grabOne()
@@ -916,45 +876,14 @@ public class Robot extends IterativeRobot {
     	armsOpen();
     	
     	drive(1000, 0.5);
-    	stop();
     	
     	armsClose();
     	
     	rightTurn(0.8);
-    	stop();
     	
     	drive(5000, 0.5);
-    	stop();
     	
     	armsOpen();
     }
     
 }
-=======
-    public void moveToZone()
-    {//move backwards for 2000 distance at full speed
-    	
-    	moveBackward(2000, 1);
-    }
-    
-    void getEncoders(){
-    	//get encoder values
-    	
-    	leftR = encoderR.get();
-    	rightR = encoderL.get();
-    	elevatorR = encoderElevator.get();
-    }
-
-    void rotate(int ammount, double speed){
-    	// Rotate for "ammount" length at "speed" power
-    	//turning direction is directly influenced whether or not ammount is positive or negative
-    	while((leftR < -ammount) && (rightR > ammount))
-    	canFL.set(-speed);
-		canBL.set(-speed);
-		
-		canBR.set(-speed);
-		canFR.set(-speed);
-    }
-}
-
->>>>>>> origin/master
