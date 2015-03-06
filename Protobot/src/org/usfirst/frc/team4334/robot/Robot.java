@@ -29,8 +29,6 @@
  *		Right Stick = Arm Motors L/R
  *
  */
-
-//THIS IS THE PRACTICE BOT CODE!!
 package org.usfirst.frc.team4334.robot;
 
 import java.util.Timer;
@@ -49,6 +47,8 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.vision.USBCamera;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -134,7 +134,7 @@ public class Robot extends IterativeRobot {
 	int autoMode;
 	
     public void robotInit() {
-    //new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20);
+    new Timer().schedule(new TimerTask(){public void run(){camSetpoint();}}, 20, 20);
     
     canFL = new CANTalon(1);
 	canBL = new CANTalon(2);
@@ -191,6 +191,7 @@ public class Robot extends IterativeRobot {
     
     public void autonomousPeriodic()
     {
+    	new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20, 20);
     	if(goOnce)
     	{
     		if(autoMode == 0)
@@ -208,7 +209,7 @@ public class Robot extends IterativeRobot {
     		if(autoMode == 2)
     		{
     			goOnce = false;
-    			new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20);
+    			new Timer().schedule(new TimerTask(){public void run(){getEncoders();}}, 20, 20);
     			grabOne();
     		}
     		
