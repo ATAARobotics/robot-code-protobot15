@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.CameraServer"/>
+<fullyQualifiedTypeName name="edu.wpi.first.wpilibj.vision.USBCamera"/>
+<fullyQualifiedTypeName name="com.ni.vision.NIVision"/>
+<fullyQualifiedTypeName name="com.ni.vision.NIVision.IMAQdxCameraControlMode"/>
+<fullyQualifiedTypeName name="edu.first.identifiers.Function"/>
+<fullyQualifiedTypeName name="edu.first.identifiers.Function.CompoundFunction"/>
+<fullyQualifiedTypeName name="edu.first.identifiers.Function.SquaredFunction"/>
+</qualifiedTypeNameHistroy>
