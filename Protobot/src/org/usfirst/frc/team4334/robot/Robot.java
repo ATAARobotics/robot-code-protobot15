@@ -34,21 +34,10 @@ package org.usfirst.frc.team4334.robot;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.CANTalon;
-import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
-import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Talon;
-import java.util.Timer;
-import java.util.TimerTask;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.vision.USBCamera;
+
 
 
 
@@ -102,19 +91,18 @@ public class Robot extends IterativeRobot {
     double leftTrig2,rightTrig2;
     double degrees, potDegrees;
 	double leftThumb,rightThumb;
-	double q; // what is this?
 	double turnRad;
 	double deadZ, deadZ2; // deadzones
 	
-    boolean stillPressed;
-    boolean stillPressed2;
-    boolean stillPressed3;
-    boolean stillPressed4;
-    boolean stillPressed5;
-    boolean stillPressed6;
-    boolean stillPressed7;
-    boolean stillPressed8;
-    boolean stillPressed9;
+    boolean stillPressed1;//WHAT
+    boolean stillPressed2;//THE
+    boolean stillPressed3;//FLYING
+    boolean stillPressed4;//FUCK
+    boolean stillPressed5;//ARE
+    boolean stillPressed6;//ALL
+    boolean stillPressed7;//THESE
+    boolean stillPressed8;//FUCKING
+    boolean stillPressed9;//BUTTONS
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
@@ -186,8 +174,6 @@ public class Robot extends IterativeRobot {
     goOnce = true;
     }
 
-    
-    
      //This function is called periodically [20 ms] during autonomous
     
     public void autonomousPeriodic()
@@ -242,9 +228,7 @@ public class Robot extends IterativeRobot {
     	}
     }
 
-    
      //This function is called periodically [20 ms] during operator control
-    
 	public void teleopPeriodic() 
     {
     	
@@ -300,13 +284,12 @@ public class Robot extends IterativeRobot {
     }
 
      //This function is called periodically during test mode
-     
     public void testPeriodic() 
     {
     	
     }
     
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\\
+//--------------------------------------------------------------------------------------------------------------------------------\\
     
     //Teleop methods
     
@@ -322,11 +305,6 @@ public class Robot extends IterativeRobot {
 			gotoCam2 = true;
     		camActivate = true;
     		stillPressed7 = true;
-    	}
-    	
-    	if (gotoSpot2)
-    	{
-
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
     		
@@ -361,20 +339,16 @@ public class Robot extends IterativeRobot {
 			gotoCam2 = false;
     		camActivate = true;	
     		stillPressed9 = true;
-    	}
-    	
-    	if (gotoSpot3)
-    	{
-
+    		
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
     		
-    		if ((elevatorMax) && (elevatorR <= 13000))
+    		if ((elevatorMax) && (elevatorR < 13000))
     		{
     			canWinch.set(-0.8);
     			canWinch2.set(0.8);
     		}
-    		else if((elevatorMax) && (elevatorR > 13000))
+    		else if((elevatorMax) && (elevatorR >= 13000))
     		{
     			canWinch.set(-0.33);
     			canWinch2.set(0.33);
@@ -397,11 +371,6 @@ public class Robot extends IterativeRobot {
 			gotoCam2 = false;
     		camActivate = true;
     		stillPressed6 = true;
-    		
-    	}
-    	
-    	if (gotoSpot)
-    	{
 
     		leftArm.set(DoubleSolenoid.Value.kForward);
 			rightArm.set(DoubleSolenoid.Value.kForward);
@@ -477,19 +446,19 @@ public class Robot extends IterativeRobot {
     	
     	//Gear Shifting [Right Thumbstick Button]
     	
-    	if (joy.getRawButton(2) == false) {stillPressed = false;}
+    	if (joy.getRawButton(2) == false) {stillPressed1 = false;}
     	
-    	if (joy.getRawButton(2) && (stillPressed == false))
+    	if (joy.getRawButton(2) && (stillPressed1 == false))
     	{	
     		if (gearShift.get() == DoubleSolenoid.Value.kForward)
     			{
     			gearShift.set(DoubleSolenoid.Value.kReverse);  		
-    			stillPressed=true;
+    			stillPressed1=true;
     			}
     		else
     		{
     			gearShift.set(DoubleSolenoid.Value.kForward);
-    			stillPressed=true;
+    			stillPressed1=true;
     		}
     	}
     	
@@ -592,11 +561,10 @@ public class Robot extends IterativeRobot {
     public void ArcadeDrive()
     {
     	//set arcade drive rules
-    	q = (joy.getRawAxis(4));
     	
     	leftThumb = -(joy.getRawAxis(1));
     	
-    	rightThumb = q;
+    	rightThumb = (joy.getRawAxis(4));
      	
     	deadZ = 0.25;
     	
