@@ -1,37 +1,45 @@
-
 /**
  * 		BINDS: 
  * 		
  * 		Joystick 1:
  * 
- * 		B = Switch Gears
- * 	
+ * 		Select = Reset elevator encoders
+ * 		Start = Cam Manual (in case pot breaks)
+ * 		
  * 		Left Thumbstick - Forward/Backward
  * 		Right Thumbstick - Turn Left/Right
  * 
  * 		LB = Arms Toggle
- * 		A = Stinger
- *		
- *		Triggers = Kicker	
- *
+ * 		RB = Cam Manual toggler
+ * 
+ * 		A = Stinger	
+ * 		B = Switch Gears
+ * 	
  *		Joystick 2:
+ *
+ *		Start = Cam manual (forward only)
  *
  *		LB = Arms Toggle
  *
- *		Y = Elevator Up
- * 		B = Elevator Down
- * 		A = Elevator Minimum
- * 		X = Elevator 1 Tote
+ * 		A = Cam Setpoint Toggle
+ * 		X = Elevator Low
+ * 		Y = Elevator One Tote
  *		
- *		Triggers = Kicker
+ *		Triggers = Elevator Manual
  *
  *		Left Stick = Arm Motors In/Out
  *		Right Stick = Arm Motors L/R
  *
  */
 
+//THIS IS COMPETITION BOT CODE
 
 package org.usfirst.frc.team4334.robot;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.CANTalon;
@@ -42,94 +50,123 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import java.util.*;
-
-
-
 /**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to each mode, as described in the IterativeRobot
- * documentation. If you change the name of this class or the package after
- * creating this project, you must also update the manifest file in the resource
- * directory.
+ * This is the official code for ATA's 2015 robot: "Elevation".
  */
 
+// � [COPYRIGHT] Alberta Tech Alliance 2015. All rights reserved.
 
 public class Robot extends IterativeRobot {
     
     //This function is run when the robot is first started up and should be
     //used for any initialization code.
-     
-    
-	Joystick joy;
+     	
+    Preferences prefs;
+	
+	Joystick joy;	//Xbox controllers
 	Joystick joy2;
 	
-	CANTalon canFL;
+	CANTalon canFL; // Talon SRXs
     CANTalon canBL;
     CANTalon canFR;
     CANTalon canBR;
     CANTalon canWinch;
     CANTalon canWinch2;
-    Talon talKicker;
+    Talon talKicker;	//Talon SRs
     Talon talArmLeft;
     Talon talArmRight;
     
-    //Encoder encoderL;
-	//Encoder encoderR;
+    Encoder encoderL; //Encoders
+	Encoder encoderR;
 	Encoder encoderElevator;
 	
-	AnalogInput pot1;
+	Timer sensorThreadAuto; 	//Threads
+	Timer elevatorThreadAuto;
+	Timer elevatorThread2Auto;	
+	Timer sensorThread;
+	Timer elevatorThread;
+	Timer elevatorThread2;
+	Timer camThreadAuto;
+	Timer camThread;
+
+	AnalogInput pot1;		//Potentiometer, Compressor and solenoids
 	Compressor comp;
     DoubleSolenoid gearShift;
     DoubleSolenoid leftArm;
     DoubleSolenoid rightArm;
     DoubleSolenoid flipper;
-    DigitalInput limit1;
+    
+    DigitalInput limit1;	//Limit Switches
     DigitalInput limit2;
-    String ElevatorEncoder;
-    String camPot;
-    String limitLow;
-    String limitHigh;
     
-    double leftThumb2,rightThumb2;
-    double leftTrig,rightTrig;
-    double leftTrig2,rightTrig2;
-    double degrees, potDegrees;
-	double leftThumb,rightThumb;
-	double q;
-	double turnRad;
-	double deadZ, deadZ2;
+    String gearPos, gearPos2; // Strings for the smartdasboard gear positions
+    
+    double leftThumb2,rightThumb2; 	// Variables where second Xbox thumbstick values are stored
+    double leftTrig,rightTrig;	   	// Variables where Xbox trigger values are stored
+    double leftTrig2,rightTrig2;	// Variables where second Xbox trigger values are stored
+    double degrees, potDegrees;		// Variables where Potentiometer values are stored
+	double leftThumb,rightThumb;	// Variables where first Xbox thumbstick values are stored
+	double turnRad, speedMultiplier;	//Variables for turning radius and overall speed multiplier
+	double deadZ, deadZ2;			// Variables that store deadzones
 	
-    boolean stillPressed; // 
-    boolean stillPressed2; //
-    boolean stillPressed3; //
-    boolean stillPressed4; //
-    boolean stillPressed5; //
-    boolean stillPressed6; //
-    boolean stillPressed7; // y
-    boolean stillPressed8; // b
-    boolean elevatorMax;
+    boolean stillPressed;	//Booleans to stop button presses from repeating 20 x per second lol
+    boolean stillPressed2;
+    boolean stillPressed3;
+    boolean stillPressed4;
+    boolean stillPressed5;
+    boolean stillPressed6;
+    boolean stillPressed7;
+    boolean stillPressed8;
+    boolean stillPressed9;	//End
+    boolean elevatorMax;	//Booleans for elevator limit switches
     boolean elevatorMin;
-    boolean elevatorManual;
-    boolean fullDown;
-    boolean camRetract;
-    boolean camExtend;
-    boolean camCancel1;
+    boolean elevatorManual;	//Boolean to decide whether manual elevator control is allowed
+    boolean camSetPoint = false;
+	boolean gotoSpot, gotoSpot2, gotoSpot3;
+	boolean gotoCam1 = true;
+	boolean gotoCam2 = false;
+	boolean camChange = false;
+	boolean camActivate = false;
+	boolean goOnce, teleOpOnce; // Variables to allow auto and certain teleop funtions to run only once
 	
-	int stage;
-	int camMode;
-	int leftR, rightR, elevatorR;
-	int range1;
-	int range2;
-	int elevatorRange;
-	int case1, case2, case3;
+	int camMode;	// Decide whether cam should use setpoint or manual mode
+	int leftR, rightR, elevatorR;	// Variables that store encoder values. "R" means rotations not right.
+	int autoMode;	// Variable that decides which auto to use
+	//controller 1 list defines
+    List<Boolean> J1B1 = new ArrayList<Boolean>();
+    List<Boolean> J1B2 = new ArrayList<Boolean>();
+    List<Boolean> J1B3 = new ArrayList<Boolean>();
+    List<Boolean> J1B4 = new ArrayList<Boolean>();
+    List<Boolean> J1B5 = new ArrayList<Boolean>();
+    List<Boolean> J1B6 = new ArrayList<Boolean>();
+    List<Boolean> J1B7 = new ArrayList<Boolean>();
+    List<Boolean> J1B8 = new ArrayList<Boolean>();
+    List<Boolean> J1B9 = new ArrayList<Boolean>();
+    List<Boolean> J1B10 = new ArrayList<Boolean>();
+    List<Double> J1Ljoy = new ArrayList<Double>();
+    List<Double> J1Rjoy = new ArrayList<Double>();
     
-    public void robotInit() {
-    
-    canFL = new CANTalon(1);
+  //controller 2 list defines
+    List<Boolean> J2B1 = new ArrayList<Boolean>();
+    List<Boolean> J2B2 = new ArrayList<Boolean>();
+    List<Boolean> J2B3 = new ArrayList<Boolean>();
+    List<Boolean> J2B4 = new ArrayList<Boolean>();
+    List<Boolean> J2B5 = new ArrayList<Boolean>();
+    List<Boolean> J2B6 = new ArrayList<Boolean>();
+    List<Boolean> J2B7 = new ArrayList<Boolean>();
+    List<Boolean> J2B8 = new ArrayList<Boolean>();
+    List<Boolean> J2B9 = new ArrayList<Boolean>();
+    List<Boolean> J2B10 = new ArrayList<Boolean>();
+    int loops = 0;
+	
+    public void robotInit()
+    {
+   	
+    canFL = new CANTalon(1); // Declaring shit
 	canBL = new CANTalon(2);
 	canFR = new CANTalon(5);
     canBR = new CANTalon(6);
@@ -139,14 +176,19 @@ public class Robot extends IterativeRobot {
     talArmLeft = new Talon(1);
     talArmRight = new Talon(2);
     
-    elevatorManual = true;
-    elevatorRange = 15900;
-    camMode = 1;
+    sensorThread = new Timer();
+    elevatorThread = new Timer();
+    elevatorThread2 = new Timer();
+    sensorThreadAuto = new Timer();
+    elevatorThreadAuto = new Timer();
+    elevatorThread2Auto = new Timer();
+    camThreadAuto = new Timer();
+    camThread = new Timer();
     
-    ElevatorEncoder = "Encoder";
-    camPot = "Cam Potentiometer";
-    limitLow = "Limit switch bottom";
-    limitHigh = "Limit Switch top";
+    elevatorManual = false;
+    camMode = 1;
+   
+    gearPos = "Gear Position:";
     
     joy = new Joystick(0);
     joy2 = new Joystick(1);
@@ -154,131 +196,168 @@ public class Robot extends IterativeRobot {
     comp  = new Compressor(0);
     comp.setClosedLoopControl(true);
     
-    pot1 = new AnalogInput(0);
+    pot1 = new AnalogInput(0);  
     
-    limit1 = new DigitalInput(6);
-    limit2 = new DigitalInput(7);
+    limit1 = new DigitalInput(3);
+    limit2 = new DigitalInput(2);
     
-    rightArm = new DoubleSolenoid(2, 3);
+    rightArm = new DoubleSolenoid(4, 5);
     rightArm.set(DoubleSolenoid.Value.kForward);
-    leftArm = new DoubleSolenoid(4, 5);
+    leftArm = new DoubleSolenoid(6, 7);
     leftArm.set(DoubleSolenoid.Value.kForward);
-    gearShift = new DoubleSolenoid(6, 7);
+    gearShift = new DoubleSolenoid(2, 3);
     gearShift.set(DoubleSolenoid.Value.kForward);
     flipper = new DoubleSolenoid(0, 1);
-    flipper.set(DoubleSolenoid.Value.kForward);
+    flipper.set(DoubleSolenoid.Value.kReverse);
     
     encoderElevator = new Encoder(0, 1, true, EncodingType.k4X);
-    //encoderR = new Encoder(1, 2, true, EncodingType.k4X);
-	//encoderL = new Encoder(3, 4, true, EncodingType.k4X);
-	//encoderL.reset();
-	//encoderR.reset();
-    encoderElevator.reset();
-    stage = 0;
-    
+    encoderR = new Encoder(8, 9, true, EncodingType.k4X);
+	encoderL = new Encoder(6, 7, true, EncodingType.k4X);
+	encoderL.reset();
+	encoderR.reset();
+    encoderElevator.reset(); 
+    teleOpOnce = true;
+    goOnce = true;
     
     }
-    public void elevatorSpeed(double speed){
-    	canWinch.set(speed);
-    	canWinch2.set(speed);
+
+    
+    public void autonomousInit()
+    {
+    	autoMode = prefs.getInt("Auto Mode", 0);
     }
     
-    private void setBottom(){
-    	double currentPos = pot1.getVoltage();
-    	boolean minElevator = limit1.get();
-    	boolean maxElevator = limit2.get();
-    	if(currentPos > 0.5){
-    		talKicker.set(-1);
-    		if(currentPos <= 0.5){
-        		talKicker.set(0);
-        	}
-    	}
-    	
-    	else if(minElevator == false){
-    		elevatorSpeed(-0.8);
-    		if(minElevator){
-        		elevatorSpeed(0);
-        	}
-    	}
-    	
-    	else if(currentPos < 4.5){
-    		talKicker.set(1);
-    		if(currentPos <= 4.5){
-    			talKicker.set(0);
+     //This function is called periodically [20 ms] during autonomous
+    
+    public void autonomousPeriodic()
+    {
+    	//controller 1 adding value to list
+        J1B1.add(joy.getRawButton(1));
+        J1B2.add(joy.getRawButton(2));
+        J1B3.add(joy.getRawButton(3));
+        J1B4.add(joy.getRawButton(4));
+        J1B5.add(joy.getRawButton(5));
+        J1B6.add(joy.getRawButton(6));
+        J1B7.add(joy.getRawButton(7));
+        J1B8.add(joy.getRawButton(8));
+        J1B9.add(joy.getRawButton(9));
+        J1B10.add(joy.getRawButton(10));
+        J1Rjoy.add(joy.getRawAxis(4));
+        J1Ljoy.add(joy.getRawAxis(1));
+        
+        //controller 2 adding value to list
+        J2B1.add(joy.getRawButton(1));
+        J2B2.add(joy.getRawButton(2));
+        J2B3.add(joy.getRawButton(3));
+        J2B4.add(joy.getRawButton(4));
+        J2B5.add(joy.getRawButton(5));
+        J2B6.add(joy.getRawButton(6));
+        J2B7.add(joy.getRawButton(7));
+        J2B8.add(joy.getRawButton(8));
+        J2B9.add(joy.getRawButton(9));
+        J2B10.add(joy.getRawButton(10));
+        
+        loops++;
+        if(loops > 4){
+        	loops = 0;
+        	
+        	//printing controller 1 lists
+        	System.out.println("joy1 button1: "+J1B1);   
+        	System.out.println("joy1 button2: "+J1B2);
+        	System.out.println("joy1 button3: "+J1B3);
+        	System.out.println("joy1 button4: "+J1B4);
+        	System.out.println("joy1 button5: "+J1B5);
+        	System.out.println("joy1 button6: "+J1B6);
+        	System.out.println("joy1 button7: "+J1B7);
+        	System.out.println("joy1 button8: "+J1B8);
+        	System.out.println("joy1 button9: "+J1B9);
+        	System.out.println("joy1 button10: "+J1B10);
+        	
+        	//printing controller 2 lists
+        	System.out.println("joy2 button1: "+J2B1);   
+        	System.out.println("joy2 button2: "+J2B2);
+        	System.out.println("joy2 button3: "+J2B3);
+        	System.out.println("joy2 button4: "+J2B4);
+        	System.out.println("joy2 button5: "+J2B5);
+        	System.out.println("joy2 button6: "+J2B6);
+        	System.out.println("joy2 button7: "+J2B7);
+        	System.out.println("joy2 button8: "+J2B8);
+        	System.out.println("joy2 button9: "+J2B9);
+        	System.out.println("joy2 button10: "+J2B10);
+        	
+        	//clearing lists
+        	J1B1.clear();
+        	J1B2.clear();
+        	J1B3.clear();
+        	J1B4.clear();
+        	J1B5.clear();
+        	J1B6.clear();
+        	J1B7.clear();
+        	J1B8.clear();
+        	J1B9.clear();
+        	J1B10.clear();
+        	
+        	J2B1.clear();
+        	J2B2.clear();
+        	J2B3.clear();
+        	J2B4.clear();
+        	J2B5.clear();
+        	J2B6.clear();
+        	J2B7.clear();
+        	J2B8.clear();
+        	J2B9.clear();
+        	J2B10.clear();
+        }
+    	if(goOnce)
+    	{
+    		autoMode = prefs.getInt("Auto Mode", 0);
+    		elevatorThread2Auto.schedule(new TimerTask(){public void run(){elevatorLow();}}, 20, 20);
+    		elevatorThreadAuto.schedule(new TimerTask(){public void run(){elevatorOneTote();}}, 20, 20);
+    		
+    		if(autoMode == 0)
+    		{
+    			goOnce = false;
+    			nothingAuto();
+    		}
+    		
+    		if(autoMode == 1)
+    		{
+    			goOnce = false;
+    			moveToZoneAuto();
+    		}
+    		
+    		if(autoMode == 2)
+    		{
+    			goOnce = false;
+    			oneToteAuto();
+    		}
+    		
+    		if(autoMode == 3)
+    		{
+    			
+    			goOnce = false;
+    			oneBinAuto();
+    			
+    		}
+    		
+    		if(autoMode == 4)
+    		{
+    			goOnce = false;
+    			Testing();
+    		}
+    		
+    		if(autoMode == 6)
+    		{
+    			goOnce = false;
+    			binJackerAuto();     
+    		}
+    		
+    		if(autoMode == 7)
+    		{
+    			goOnce = false;
+    			threeToteAuto();
     		}
     	}
-    }
-    
-    List<Boolean> buttonList1 = new ArrayList<Boolean>();
-    List<Boolean> buttonList2 = new ArrayList<Boolean>();
-    List<Boolean> buttonList3 = new ArrayList<Boolean>();
-    List<Boolean> buttonList4 = new ArrayList<Boolean>();
-    List<Boolean> buttonList5 = new ArrayList<Boolean>();
-    List<Boolean> buttonList52 = new ArrayList<Boolean>();
-    List<Boolean> buttonList6 = new ArrayList<Boolean>();
-    List<Boolean> buttonList7 = new ArrayList<Boolean>();
-    List<Boolean> buttonList8 = new ArrayList<Boolean>();
-    List<Double> elavatorList = new ArrayList<Double>();
-    List<Double> kicker = new ArrayList<Double>();
-    List<Double> driveFL = new ArrayList<Double>();
-    List<Double> driveBL = new ArrayList<Double>();
-    List<Double> driveFR = new ArrayList<Double>();
-    List<Double> driveBR = new ArrayList<Double>();
-    int loops = 0;
-     //This function is called periodically [20 ms] during autonomous
-     
-    public void autonomousPeriodic() 
-    {
-    buttonList1.add(joy.getRawButton(1));
-    buttonList2.add(joy.getRawButton(2));
-    buttonList3.add(joy.getRawButton(3));
-    buttonList4.add(joy.getRawButton(4));
-    buttonList5.add(joy.getRawButton(5));
-    buttonList52.add(joy2.getRawButton(5));
-    buttonList6.add(joy.getRawButton(6));
-    buttonList7.add(joy2.getRawButton(7));
-    buttonList8.add(joy2.getRawButton(8));
-    elavatorList.add(canWinch.get());
-    kicker.add(pot1.getVoltage());
-    driveFL.add(canFL.get());
-    driveBL.add(canBL.get());
-    driveFR.add(canFR.get());
-    driveBR.add(canBR.get());
-    loops++;
-    if(loops >4){
-    	loops = 0;
-    	System.out.println("buttonList1: "+buttonList1);
-    	System.out.println("buttonList2: "+buttonList2);
-    	System.out.println("buttonList3: "+buttonList3);
-    	System.out.println("buttonList4: "+buttonList4);
-    	System.out.println("buttonList5: "+buttonList5);
-    	System.out.println("buttonList52: "+buttonList52);
-    	System.out.println("buttonList6: "+buttonList6);
-    	System.out.println("buttonList7: "+buttonList7);
-    	System.out.println("buttonList8: "+buttonList8);
-    	System.out.println("elavatorList: "+elavatorList);
-    	System.out.println("kicker: "+kicker);
-    	System.out.println("driveFL: "+driveFL);
-    	System.out.println("driveBL: "+driveBL);
-    	System.out.println("driveFR: "+driveFR);
-    	System.out.println("driveBR: "+driveBR);
-    	
-    	buttonList1.clear();
-    	buttonList2.clear();
-    	buttonList3.clear();
-    	buttonList4.clear();
-    	buttonList5.clear();
-    	buttonList52.clear();
-    	buttonList6.clear();
-    	buttonList7.clear();
-    	buttonList8.clear();
-    	elavatorList.clear();
-    	kicker.clear();
-    	driveFL.clear();
-    	driveBL.clear();
-    	driveFR.clear();
-    	driveBR.clear();
-    }
     }
 
     
@@ -286,174 +365,167 @@ public class Robot extends IterativeRobot {
     
 	public void teleopPeriodic() 
     {
+		if(teleOpOnce) // Everything that should only be run once goes in here
+		{
+			elevatorThread.schedule(new TimerTask(){public void run(){elevatorOneTote();}}, 20, 20); // Starting threads
+			elevatorThread2.schedule(new TimerTask(){public void run(){elevatorLow();}}, 20, 20);
+			sensorThread.schedule(new TimerTask(){public void run(){getSensors();}}, 20, 20);
+			
+			teleOpOnce = false; // Ending if statement so it only runs once
+		}
     	
-    	elevatorR = encoderElevator.get();
-    	potDegrees = pot1.getVoltage();
+		//getSensors(); // Running the TeleOp functions. These are in functions mainly for organization
+		
+    	arcadeDrive();
     	
-    	range1 = 240;
-    	range2 = 19000;
+    	armMotors();
     	
-    	ArcadeDrive();
-    	
-    	ArmMotors();
-    	
-    	Elevator();
-    	
-    	camRetract();
-    	
-    	pneumatics();
+    	elevator();
+    		
+    	buttonToggles();
     	
     	camFullManual();
     	
-    	elevatorOneTote();
+    	camSetpoint();
     	
-    	elevatorLow();
+    	//elevatorOneTote();
     	
-    	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
+    	//elevatorLow();
     	
-    	if (joy2.getRawButton(6) && (stillPressed8 == false))
-    	{	
-    		if (camMode == 1)
-    			{
-    				camMode = 2;
-    			}
-    		else if(camMode == 2)
-    		{
-    			camMode = 1;
-    		}
-    	}
+    	smartDashboard();
     	
- //-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    	
-    	//SmartDashboard Crap
-    	
-    	potDegrees = pot1.getVoltage();
-    	
-    	SmartDashboard.putNumber(ElevatorEncoder, elevatorR);
-    	
-    	SmartDashboard.putNumber(camPot, potDegrees);
-    	
-    	SmartDashboard.putBoolean(limitLow, elevatorMin);
-    	
-    	SmartDashboard.putBoolean(limitHigh, elevatorMax);
-   }
+    }
 
      //This function is called periodically during test mode
      
     public void testPeriodic() 
     {
-    
-    }
-    
-//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    
-    public void elevatorHigh()
-    {
     	
+    }
+
+//----------------------------------------------------------------------------------------------------------------------------------\\
+   
+    //Teleop methods
+    
+    public void smartDashboard()
+    {
+    	//Printing info for the smartdashboard
+    	
+    	SmartDashboard.putNumber("Elevator Encoder", elevatorR); 
+    	SmartDashboard.putNumber("Cam Potentiometer", potDegrees); 
+    	SmartDashboard.putBoolean("High Limit Switch", elevatorMax);   
+    	SmartDashboard.putBoolean("Low Limit Switch", elevatorMin);   
+    	SmartDashboard.putString(gearPos, gearPos2);	
     }
     
     public void elevatorLow()
     {
-    	if (joy2.getRawButton(1) == false) {stillPressed7 = false;}
+    	if (joy2.getRawButton(3) == false) {stillPressed7 = false;}
     	
-    	if (joy2.getRawButton(1) && (stillPressed7 == false))
+    	if (joy2.getRawButton(3) && (stillPressed7 == false))
     	{
-    		elevatorMax = limit1.get();
+    		gotoSpot2 = true;
+    		gotoCam1 = false;
+			gotoCam2 = true;
+    		camActivate = true;
+    		stillPressed7 = true;
+    	}
+    	
+    	if (gotoSpot2)
+    	{
+
+    		leftArm.set(DoubleSolenoid.Value.kReverse);
+			rightArm.set(DoubleSolenoid.Value.kReverse);
     		
-    		if(elevatorMax = true)
-        	{
-        		case3 = 1;
-        		
-        	}
-        	
-        	switch(case3)
-        	{
-        		case 1:
-        		{
-        			while(elevatorMin == true)
-            		{
-        				elevatorMin = limit2.get();
-        				
-            			canWinch.set(0.68);
-            			canWinch.set(0.68);
-            		}
-        		}
-        		
-        		case 2:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        		
-        		
-        	}
+    		if ((elevatorMin) && (elevatorR >= 1500))
+    		{
+    			canWinch.set(0.68);
+    			canWinch2.set(0.68);
+    		}
+    		
+    		else if((elevatorMin) && (elevatorR < 1500))
+    		{
+    			canWinch.set(0.3);
+    			canWinch2.set(0.3);
+    		}
+    		
+    		else 
+    		{
+    			gotoSpot2=false;
+   			}
+    	}
+    }
+    
+    public void elevatorHigh()
+    {
+    	if (joy2.getRawButton(2) == false) {stillPressed9 = false;}
+    	
+    	if (joy2.getRawButton(2) && (stillPressed9 == false))
+    	{
+    		gotoSpot3 = true;
+    		gotoCam1 = true;
+			gotoCam2 = false;
+    		camActivate = true;	
+    		stillPressed9 = true;
+    	}
+    	
+    	if (gotoSpot3)
+    	{
+
+    		leftArm.set(DoubleSolenoid.Value.kForward);
+			rightArm.set(DoubleSolenoid.Value.kForward);
+    		
+    		if ((elevatorMax) && (elevatorR <= 13000))
+    		{
+    			canWinch.set(-0.8);
+    			canWinch2.set(0.8);
+    		}
+    		else if((elevatorMax) && (elevatorR > 13000))
+    		{
+    			canWinch.set(-0.33);
+    			canWinch2.set(0.33);
+    		}
+    		else {
+    			gotoSpot2=false;
+    		}
     	}
     }
     
     public void elevatorOneTote()
     {
-
     	if (joy2.getRawButton(4) == false) {stillPressed6 = false;}
     	
     	if (joy2.getRawButton(4) && (stillPressed6 == false))
     	{
-    		elevatorR = encoderElevator.get();
+    		gotoSpot = true;
+    		gotoCam1 = true;
+			gotoCam2 = false;
+    		camActivate = true;
+    		stillPressed6 = true;
     		
-    		if(elevatorR < 10447)
-        	{
-        		case1 = 1;
-        		
-        	}
-        	
-        	if(elevatorR > 10447)
-        	{
-        		case1 = 3;
-        	}
-        
-        	switch(case1)
-        	{
-        		case 1:
-        		{
-        			while(elevatorR < 10447)
-            		{
-        				elevatorR = encoderElevator.get();
-        				
-            			canWinch.set(-0.8);
-            			canWinch.set(-0.8);
-            		}
-        		}
-        		
-        		case 2:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        		
-        		case 3:
-        		{
-        			while(elevatorR > 10447)
-            		{
-        				elevatorR = encoderElevator.get();
-        				
-            			canWinch.set(0.8);
-            			canWinch.set(0.8);
-            		}
-        		}
-        		
-        		case 4:
-        		{
-        			canWinch.set(0);
-        			canWinch2.set(0);
-        			break;
-        		}
-        	}
+    	}
+    	
+    	if (gotoSpot)
+    	{
+
+    		leftArm.set(DoubleSolenoid.Value.kReverse);
+			rightArm.set(DoubleSolenoid.Value.kReverse);
+    		
+    		if (elevatorR < 10500)
+    		{
+    			canWinch.set(-1);
+    			canWinch2.set(-1);
+    		}
+    		else {
+    			gotoSpot=false;
+    		}
     	}
     }
     
     public void camFullManual()
     {
+    	//If cam manual is allowed, use the select button to move it in only one direction
+    	
     	if(camMode == 2)
     	{
     		if(joy.getRawButton(8) == false)
@@ -469,9 +541,56 @@ public class Robot extends IterativeRobot {
     	}
     }
     
-    public void pneumatics()
+    public void buttonToggles()
     
     {
+    	//Smartdashboard gear position string changer
+    	
+    	if(gearShift.get() == DoubleSolenoid.Value.kForward)
+    	{
+    		gearPos2 = "High Gear";
+    	}
+    	if(gearShift.get() == DoubleSolenoid.Value.kReverse)
+    	{
+    		gearPos2 = "Low Gear";
+    	}
+    	
+    	//Cam Setpoint Toggle
+    	
+    	if (joy2.getRawButton(1) == false) {stillPressed5 = false;}
+    	
+    	if (joy2.getRawButton(1) && (stillPressed5 == false))
+    	{
+    		if (gotoCam1)
+			{
+				gotoCam1 = false;
+				
+			}
+    		else if (!gotoCam1)
+    		{
+    			gotoCam1 = true;
+    		}
+    		
+    		camActivate = true;
+    		stillPressed5 = true;
+    	}
+    
+    	//Cam Mode Switching [RB]
+    	
+    	if (joy2.getRawButton(6) == false) {stillPressed8 = false;}
+    	
+    	if (joy2.getRawButton(6) && (stillPressed8 == false))
+    	{
+    		if (camMode == 1)
+    			{
+    				camMode = 2;
+    			}
+    		else if(camMode == 2)
+    		{
+    			camMode = 1;
+    		}
+    	}
+    	
     	//Gear Shifting [Right Thumbstick Button]
     	
     	if (joy.getRawButton(2) == false) {stillPressed = false;}
@@ -548,129 +667,137 @@ public class Robot extends IterativeRobot {
     		}	
     }
        
-    public void camRetract()
+    public void camSetpoint()
     {
-    	if (joy2.getRawButton(2) == false) {stillPressed5 = false;}
+    	//If cam is in setpoint mode, switch positions using the pot
     	
-    	if (joy2.getRawButton(2) && (stillPressed5 == false))
+    	if ((camActivate) && (camMode == 1))
     	{
-    		potDegrees = pot1.getVoltage();
-    		
-    		if(potDegrees < 4.622)
-        	{
-        		case2 = 1;
-        		
-        	}
-        	
-        	switch(case2)
-        	{
-        		case 1:
+    		if(gotoCam1)
+    		{
+
+        		if (potDegrees < 3.117)
         		{
-        			while(potDegrees < 4.622)
-            		{
-        				potDegrees = pot1.getVoltage();
-        				
-            			talKicker.set(1);
-            		}
+        			talKicker.set(-1);
         		}
-        		
-        		case 2:
+     
+        		else 
         		{
         			talKicker.set(0);
-        			break;
+        			camActivate=false;
+        		}
+    		}
+    		
+    		if(!gotoCam1)
+    		{
+
+    			if (potDegrees > 2.72)
+        		{
+        			talKicker.set(1);
         		}
         		
-        		
-        	}
+        		else 
+        		{
+        			talKicker.set(0);
+        			camActivate=false;
+        		}
+    		}
+    		
     	}
     }
-        
-    public void ArcadeDrive()
+    
+    public void arcadeDrive()
     {
-    	q = (joy.getRawAxis(4));
+    	//Assign the xbox values to variables
+    	
+    	rightThumb = joy.getRawAxis(4);
     	
     	leftThumb = -(joy.getRawAxis(1));
     	
-    	rightThumb = q;
-     	
-    	deadZ = 0.13;
+    	//Define the speed multiplier, deadzones and turning radius multiplier
     	
-    	turnRad = 0.9;
+    	speedMultiplier = 1;
+     	
+    	deadZ = 0.25;
+    	
+    	turnRad = 0.74;
     	
     	//If left thumbstick is still
     	
     	if((leftThumb < deadZ) && (leftThumb > -deadZ))
     	{
-    		canFL.set(-rightThumb);
-    		canBL.set(-rightThumb);
+    		canFL.set(((-(rightThumb * turnRad))) * speedMultiplier);
+    		canBL.set(((-(rightThumb * turnRad))) * speedMultiplier);
     		
-    		canBR.set(-rightThumb);
-    		canFR.set(-rightThumb);
+    		canBR.set(((-(rightThumb * turnRad))) * speedMultiplier);
+    		canFR.set(((-(rightThumb * turnRad))) * speedMultiplier);
     	}
     	
     	//If right thumbstick is still
     	
     	if((rightThumb < deadZ) && (rightThumb > -deadZ))
     	{
-    		canFL.set(-leftThumb);
-    		canBL.set(-leftThumb);
+    		canFL.set(((-leftThumb)) * speedMultiplier);
+    		canBL.set(((-leftThumb)) * speedMultiplier);
     		
-    		canBR.set(leftThumb);
-    		canFR.set(leftThumb);
+    		canBR.set(((leftThumb)) * speedMultiplier);
+    		canFR.set(((leftThumb)) * speedMultiplier);
     	}
     	
     	//If both thumbsticks are positive
     	
     	if((leftThumb > deadZ) && (rightThumb > deadZ))
     	{
-    		canFL.set(-leftThumb);
-    		canBL.set(-leftThumb);
+    		canFL.set(((-leftThumb)) * speedMultiplier);
+    		canBL.set(((-leftThumb)) * speedMultiplier);
     		
-    		canBR.set(leftThumb - (rightThumb * turnRad));
-    		canFR.set(leftThumb - (rightThumb * turnRad));
+    		canBR.set(((leftThumb - (rightThumb * turnRad))) * speedMultiplier);
+    		canFR.set(((leftThumb - (rightThumb * turnRad))) * speedMultiplier);
     	}
     	
     	//If left thumbstick is positive and right thumbstick is negative
     	
     	if((leftThumb > deadZ) && (rightThumb < -deadZ))
     	{
-    		canFL.set(-(leftThumb + (rightThumb * turnRad)));
-    		canBL.set(-(leftThumb + (rightThumb * turnRad)));
+    		canFL.set(((-(leftThumb + (rightThumb * turnRad)))) * speedMultiplier);
+    		canBL.set(((-(leftThumb + (rightThumb * turnRad)))) * speedMultiplier);
 		
-    		canBR.set(leftThumb);
-    		canFR.set(leftThumb);
+    		canBR.set(((leftThumb)) * speedMultiplier);
+    		canFR.set(((leftThumb)) * speedMultiplier);
     	}
     	
     	//If left thumbstick is negative and right thumbstick is positive
     	
     	if((leftThumb < -deadZ) && (rightThumb > deadZ))
     	{
-    		canFL.set(-leftThumb);
-    		canBL.set(-leftThumb);
+    		canFL.set(((-(leftThumb + (rightThumb * turnRad)))) * speedMultiplier);
+    		canBL.set(((-(leftThumb + (rightThumb * turnRad)))) * speedMultiplier);
     		
-    		canBR.set(leftThumb + (rightThumb * turnRad));
-    		canFR.set(leftThumb + (rightThumb * turnRad));
+    		canBR.set(((leftThumb)) * speedMultiplier);
+    		canFR.set(((leftThumb)) * speedMultiplier);
     	}
     	
     	//If left thumbstick is negative and right thumbstick is negative
     	
     	if((leftThumb < -deadZ) && (rightThumb < -deadZ))
     	{
-    		canFL.set(-(leftThumb - (rightThumb * turnRad)));
-    		canBL.set(-(leftThumb - (rightThumb * turnRad)));
+    		canFL.set(((-leftThumb)) * speedMultiplier);
+    		canBL.set(((-leftThumb)) * speedMultiplier);
     		
-    		canBR.set(leftThumb);
-    		canFR.set(leftThumb);
+    		canBR.set(((leftThumb - (rightThumb * turnRad))) * speedMultiplier);
+    		canFR.set(((leftThumb - (rightThumb * turnRad))) * speedMultiplier);
     	}
 
     }
        
-    public void ArmMotors()
+    public void armMotors()
     {
     	//Arm motors
     	
-		leftThumb2=(joy2.getRawAxis(1));
-    	rightThumb2=(joy2.getRawAxis(4));
+    	//Assign xbox values to variables
+    	
+		leftThumb2 = (joy2.getRawAxis(1));
+    	rightThumb2 = (joy2.getRawAxis(4));
     	
     	deadZ2 = 0.17;
     	
@@ -728,55 +855,417 @@ public class Robot extends IterativeRobot {
     		talArmRight.set(-(leftThumb2 - (rightThumb2 * 0.9))); 	
     	}
     }
-        
-    public void Elevator()
+       
+    public void elevator()
+    	
     {
     	
     	//Elevator Motors [Y = Up B = Down]
     	
-    	elevatorMax = limit1.get();
-    	elevatorMin = limit2.get();
-    
-    	if(elevatorManual = true)
-    	{
-    		if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == true))
+     		if((joy2.getRawAxis(3) > 0.09) && (joy2.getRawAxis(2) > 0.09))
+        	{
+        		canWinch.set(0);
+        		canWinch2.set(0);
+        	}
+     		
+     		if((joy2.getRawAxis(3) < 0.09) && (joy2.getRawAxis(2) < 0.09))
         	{
         		canWinch.set(0);
         		canWinch2.set(0);
         	}
         	
-        	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == false))
+        	if((joy2.getRawAxis(3) > 0.09) && (joy2.getRawAxis(2) < 0.09) && (elevatorMax == true))
         	{
-        		canWinch.set(0);
-        		canWinch2.set(0);
+        		elevatorManual = true;
+        		gotoSpot=false;
+        		canWinch.set(-(joy2.getRawAxis(3)));
+        		canWinch2.set(-(joy2.getRawAxis(3)));
         	}
         	
-        	if((joy2.getRawButton(7) == true) && (joy2.getRawButton(8) == false) && (elevatorMin == true))
+        	if((joy2.getRawAxis(3) < 0.1) && (joy2.getRawAxis(2) > 0.1) && (elevatorMin == true))
         	{
-        		canWinch.set(0.5);
-        		canWinch2.set(0.5);
-        	}
-        	
-        	if((joy2.getRawButton(7) == false) && (joy2.getRawButton(8) == true) && (elevatorMax == true))
-        	{
-        		if(elevatorR <= 12000)
-        		{
-        			canWinch.set(-0.5);
-            		canWinch2.set(-0.5);
-        		}	
-        		
-        		if(elevatorR > 12000)
-        		{
-        			canWinch.set(-0.3);
-        			canWinch2.set(-0.3);
-        		}
-        	}
+        		elevatorManual = true;
+        		gotoSpot=false;
+        		canWinch.set(joy2.getRawAxis(2));
+        		canWinch2.set(joy2.getRawAxis(2));
         }
     	
-    	if(joy.getRawButton(7))
+        //Use button on the first controller to reset the elevator encoder, useful for not fucking up the threaded rod :P
+        	
+    	if(joy.getRawButton(7) == true)
     	{
     		encoderElevator.reset();
     	}
+    }
+
+//----------------------------------------------------------------------------------------------------------------------------------\\
+   
+    //Auto Mode methods
+    
+    public void getSensors()
+    {
+    	//Gets the absolute value of the drivetrain encoders
+    	
+    	leftR = Math.abs(encoderR.get());
+    	rightR = Math.abs(encoderL.get());
+    	
+    	//Gets the regular values of everything else
+    	
+    	elevatorR = encoderElevator.get();
+    	potDegrees = pot1.getVoltage();
+    	elevatorMin = limit2.get();
+    	elevatorMax = limit1.get();
+    	
+    	//Prints them to the smartdashboard
+    	
+    	SmartDashboard.putNumber("Left Encoder", leftR);
+    	SmartDashboard.putNumber("Right Encoder", rightR);
+    }
+    
+    public void drive(int distance, double power)
+    {
+    	//Sets the motors to the given power
+    	
+    	canFL.set(-power);
+		canBL.set(-power);
+		
+		canBR.set(power);
+		canFR.set(power);
+		
+		//Waits for the given time
+		
+		try {
+			Thread.sleep(distance);
+		} catch (InterruptedException e) {
+			
+			Thread.currentThread().interrupt();
+		}
+		
+		//Stops
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+	
+    }
+    
+    public void armsClose()
+    {
+    	//Sets the arms solenoids to open
+    	
+    	leftArm.set(DoubleSolenoid.Value.kForward);  
+		rightArm.set(DoubleSolenoid.Value.kForward);
+    }
+    
+    public void armsOpen()
+    {
+    	//Sets the arms solenoids to closed
+    	
+    	leftArm.set(DoubleSolenoid.Value.kReverse);  
+		rightArm.set(DoubleSolenoid.Value.kReverse);
+    }
+    
+    public void leftTurn90(double power)
+    {
+    	//Sets the drivetrain motors to the given power to make a right angle turn
+    	
+    	while(rightR < 730)
+    	{
+    		getSensors();
+    		
+    		canFL.set(power);
+    		canBL.set(power);
+    		
+    		canBR.set(power);
+    		canFR.set(power);
+    	}
+    	
+    	//Stops
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
+		//Resets the encoders
+		
+    	encoderR.reset();
+    	encoderL.reset();
+    }
+    
+    public void rightTurn90(double power)
+    {
+    	//Sets the drivetrain motors to the given power to make a right angle turn
+    	
+    	while(rightR < 730)
+    	{
+    		getSensors();
+    		
+    		canFL.set(-power);
+    		canBL.set(-power);
+    		
+    		canBR.set(-power);
+    		canFR.set(-power);
+    	}
+    	
+    	//Stops
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
+		//Resets the encoders
+		
+    	encoderR.reset();
+    	encoderL.reset();
+    }
+    
+    public void leftTurn45(double power)
+    {
+    	//Sets the drivetrain motors to the given power to make a 45 degree turn
+    	
+    	while(rightR < 365)
+    	{
+    		getSensors();
+    		
+    		canFL.set(power);
+    		canBL.set(power);
+    		
+    		canBR.set(power);
+    		canFR.set(power);
+    	}
+    	
+    	//Stops
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
+		//Stops
+		
+    	encoderR.reset();
+    	encoderL.reset();
+    }
+    
+    public void rightTurn45(double power)
+    {
+    	//Sets the drivetrain motors to the given power to make a 45 degree turn
+    	
+    	while(rightR < 365)
+    	{
+    		getSensors();
+    		
+    		canFL.set(-power);
+    		canBL.set(-power);
+    		
+    		canBR.set(-power);
+    		canFR.set(-power);
+    	}
+    	
+    	//Stops
+    	
+    	canFL.set(0);
+		canBL.set(0);
+		
+		canBR.set(0);
+		canFR.set(0);
+    	
+		//Resets the encoders
+		
+    	encoderR.reset();
+    	encoderL.reset();
+    }
+    
+    public void moveArms(int time, int power)
+    {
+    	//Moves arms ar given power
+    	
+    	talArmLeft.set(power);
+    	talArmRight.set(-power);
+    		
+    	//Waits for the given time
+    	
+    	try {
+    			Thread.sleep(time);
+    	} catch (InterruptedException e) {
+    		
+   			Thread.currentThread().interrupt();
+   		}
+    	
+    	//Stops
+    	
+    	talArmLeft.set(0);
+		talArmRight.set(0);
+    }
+    
+    public void stingerOut()
+    {
+    	//Sets the stinger solenoid to out
+    	
+    	flipper.set(DoubleSolenoid.Value.kForward);
+    }
+    
+    public void stingerIn()
+    {
+    	//Sets the stinger solenoid to in
+    	
+    	flipper.set(DoubleSolenoid.Value.kReverse);
+    }
+    
+    public void wait(int Milliseconds)
+    {
+    	//Pauses the thread for the given amount of time
+    	
+    	try {
+			Thread.sleep(Milliseconds);
+		} catch (InterruptedException e) {
+			
+			Thread.currentThread().interrupt();
+		}
+    }
+    
+//----------------------------------------------------------------------------------------------------------------------------------\\
+    
+    //Auto Modes
+    
+    public void Testing()
+    {
+    	
+    }
+    
+    public void moveToZoneAuto()
+    {
+    	drive(400, -0.5);
+    	
+    	elevatorThreadAuto.cancel();
+    	elevatorThread2Auto.cancel();
+    	sensorThreadAuto.cancel();
+    }
+    
+    public void oneToteAuto()
+    {
+    	armsClose();
+    	
+    	rightTurn90(0.7);
+    	
+    	drive(1800, 0.5);
+    	
+    	moveArms(1000, 1);
+    	
+    	armsOpen();
+    	
+    	elevatorThreadAuto.cancel();
+    	elevatorThread2Auto.cancel();
+    	sensorThreadAuto.cancel();
+    }
+    
+    public void oneBinAuto()
+    {
+    	armsClose();
+    	
+    	leftTurn90(0.8);
+    	
+    	drive(1800, 0.6);
+    	
+    	moveArms(1000, 1);
+    	
+    	armsOpen();
+    	
+    	elevatorThreadAuto.cancel();
+    	elevatorThread2Auto.cancel();
+    	sensorThreadAuto.cancel();
+    }
+    
+    public void nothingAuto()
+    {
+    	elevatorThreadAuto.cancel();
+    	elevatorThread2Auto.cancel();
+    	sensorThreadAuto.cancel();
+    }
+    
+    public void threeToteAuto()
+    {
+    	
+    	gotoSpot = true;
+		gotoCam1 = true;
+		gotoCam2 = false;
+		camActivate = true;
+    	
+    	rightTurn45(0.7);
+		
+		drive(300, 0.5);
+		
+		leftTurn90(0.5);
+		
+    	drive(300, 0.5);
+    	
+    	armsClose();
+    	
+    	gotoSpot2 = true;
+		gotoCam1 = false;
+		gotoCam2 = true;
+		camActivate = true;
+    	
+    	moveArms(650, 1);
+    	
+    	rightTurn90(0.5);
+    	
+    	drive(300, 0.5);
+    	
+    	leftTurn90(0.5);
+    	
+    	gotoSpot = true;
+		gotoCam1 = true;
+		gotoCam2 = false;
+		camActivate = true;
+    	
+    	drive(300, 0.5);
+    	
+    	armsClose();
+    	
+    	leftTurn90(0.5);
+    	
+    	drive(4500, 0.7);
+    	
+    	moveArms(650, 1);
+    	
+    	gotoSpot2 = true;
+		gotoCam1 = false;
+		gotoCam2 = true;
+		camActivate = true;
+		
+		wait(3000);
+		
+		drive(500, -0.5);
+		
+    }
+  
+    public void binJackerAuto()
+    {
+    	drive(598, -0.7);
+		
+		wait(900);
+		
+    	stingerOut();
+    	
+    	wait(1000);
+    	
+    	drive(800, 1);
+    	
+		wait(700);
+		
+    	stingerIn();
+    	
+    	elevatorThreadAuto.cancel();
+    	elevatorThread2Auto.cancel();
+    	sensorThreadAuto.cancel();
     }
     
 }
