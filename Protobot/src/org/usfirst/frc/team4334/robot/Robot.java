@@ -94,15 +94,15 @@ public class Robot extends IterativeRobot {
 	double turnRad;
 	double deadZ, deadZ2; // deadzones
 	
-    boolean stillPressed1;//WHAT
-    boolean stillPressed2;//THE
-    boolean stillPressed3;//FLYING
-    boolean stillPressed4;//FUCK
-    boolean stillPressed5;//ARE
-    boolean stillPressed6;//ALL
-    boolean stillPressed7;//THESE
-    boolean stillPressed8;//FUCKING
-    boolean stillPressed9;//BUTTONS
+    boolean stillPressed1;
+    boolean stillPressed2;
+    boolean stillPressed3;
+    boolean stillPressed4;
+    boolean stillPressed5;
+    boolean stillPressed6;
+    boolean stillPressed7;
+    boolean stillPressed8;
+    boolean stillPressed9;
     boolean elevatorMax;
     boolean elevatorMin;
     boolean elevatorManual;
